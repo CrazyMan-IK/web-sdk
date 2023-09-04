@@ -3,11 +3,13 @@ const path = require('path');
 const dist = path.join(__dirname, 'dist');
 
 module.exports = {
-  entry: ['./src/sdk.ts'],
+  entry: {
+    sdk: './src/sdk.ts'
+  },
   output: {
     //filename: 'bundle.js',
     filename: '[name].js',
-    library: 'web-sdk',
+    //library: 'web-sdk',
     libraryTarget: 'umd',
     path: dist
   },
