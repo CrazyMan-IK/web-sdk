@@ -1,5 +1,6 @@
 import SDK from './sdk';
-import Localization from './localization';
+import Localization, { Locale } from './localization';
+import LocalizedString from './localization/localized-string';
 
 export default SDK;
-export { Localization };
+export { Localization, Locale, LocalizedString };
