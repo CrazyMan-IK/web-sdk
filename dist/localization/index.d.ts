@@ -14,6 +14,7 @@ export default class Localization {
     static get locale(): Locale;
     static set locale(value: Locale);
     static addString(key: string, values: Readonly<Record<Locale, string>>): void;
+    static addStrings(values: Record<string, Readonly<Record<Locale, string>> | undefined>): void;
     static getLocalizedString(key: string, fallback?: string | undefined): LocalizedString;
     static getLocalizedValue(key: string): string;
 }

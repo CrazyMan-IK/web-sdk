@@ -38,6 +38,12 @@ export default class Localization {
     this._strings[key] = values;
   }
 
+  public static addStrings(values: Record<string, Readonly<Record<Locale, string>> | undefined>) {
+    for (const [key, value] of Object.entries(values)) {
+      this._strings[key] = value;
+    }
+  }
+
   public static getLocalizedString(key: string, fallback: string | undefined = undefined) {
     if (fallback === undefined) {
       fallback = key;
