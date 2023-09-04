@@ -4,7 +4,7 @@ const dist = path.join(__dirname, 'dist');
 
 module.exports = {
   entry: {
-    sdk: './src/sdk.ts'
+    index: './src/index.ts'
   },
   output: {
     //filename: 'bundle.js',
