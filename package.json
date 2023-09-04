@@ -1,7 +1,7 @@
 {
   "name": "web-sdk",
   "version": "1.0.0",
-  "main": "dist/web-sdk.js",
+  "main": "dist/main.js",
   "types": "dist/",
   "repository": "https://github.com/CrazyMan-IK/web-sdk",
   "author": "CrazyMan-IK <superdanik2004@gmail.com>",
