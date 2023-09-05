@@ -10,8 +10,12 @@ module.exports = {
     //filename: 'bundle.js',
     filename: '[name].js',
     //library: 'web-sdk',
-    libraryTarget: 'umd',
+    libraryTarget: 'module',
+    chunkFormat: 'module',
     path: dist
+  },
+  experiments: {
+    outputModule: true
   },
   resolve: {
     extensions: ['.ts', '.js']
