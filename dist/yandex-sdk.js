@@ -1,6 +1,68 @@
-import { Locale } from '../localization';
-import SDKWrapper from '../sdk-wrapper';
-export default class YandexGamesSDKWrapper extends SDKWrapper {
+"use strict";
+exports.id = 504;
+exports.ids = [504];
+exports.modules = {
+
+/***/ 112:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "default": () => (/* binding */ YandexGamesSDKWrapper)
+});
+
+// EXTERNAL MODULE: ./src/localization/index.ts
+var localization = __webpack_require__(644);
+;// CONCATENATED MODULE: ./src/sdk-wrapper.ts
+function getLocalStorageItem(key) {
+    try {
+        return localStorage.getItem(key);
+    }
+    catch {
+        return null;
+    }
+}
+function setLocalStorageItem(key, value) {
+    try {
+        localStorage.setItem(key, value);
+    }
+    catch {
+        return;
+    }
+}
+class SDKWrapper {
+    get deviceInfo() {
+        return {
+            type: 'desktop',
+            isDesktop: () => true,
+            isMobile: () => false,
+            isTablet: () => false,
+            isTV: () => false
+        };
+    }
+    async getPlayerData(keys) {
+        const data = JSON.parse(getLocalStorageItem('DATA') ?? '{}');
+        if (keys === undefined) {
+            return data;
+        }
+        const result = {};
+        for (const key of keys) {
+            result[key] = data[key];
+        }
+        return result;
+    }
+    async setPlayerData(values) {
+        setLocalStorageItem('DATA', JSON.stringify(values));
+    }
+}
+
+;// CONCATENATED MODULE: ./src/yandex-sdk/index.ts
+
+
+class YandexGamesSDKWrapper extends SDKWrapper {
     _sdk;
     _player = null;
     _isAuthorized = false;
@@ -11,7 +73,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         this._isDraft = location.hash.search('draft=true') >= 0;
     }
     get locale() {
-        let result = Locale.Russian;
+        let result = localization/* Locale */.g.Russian;
         const lang = this._sdk.environment.i18n.lang;
         switch (lang) {
             case 'ru':
@@ -19,16 +81,16 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             case 'kk':
             case 'uk':
             case 'uz':
-                result = Locale.Russian;
+                result = localization/* Locale */.g.Russian;
                 break;
             case 'tr':
-                result = Locale.Turkish;
+                result = localization/* Locale */.g.Turkish;
                 break;
             case 'de':
-                result = Locale.Deutsch;
+                result = localization/* Locale */.g.Deutsch;
                 break;
             default:
-                result = Locale.English;
+                result = localization/* Locale */.g.English;
                 break;
         }
         return result;
@@ -110,4 +172,9 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         });
     }
 }
-//# sourceMappingURL=index.js.map
+
+
+/***/ })
+
+};
+;

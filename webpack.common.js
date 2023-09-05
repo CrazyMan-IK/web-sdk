@@ -1,5 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
 
 const dist = path.join(__dirname, 'dist');
 
@@ -36,12 +35,14 @@ module.exports = {
     ]
   },
   optimization: {
+    minimize: false,
     minimizer: ['...'],
     sideEffects: true,
     splitChunks: {
       chunks: 'all'
     }
-  }
+  },
+  target: 'node'
   //mode: 'production'
   //mode: 'development'
 };
