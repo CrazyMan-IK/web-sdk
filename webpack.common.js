@@ -17,11 +17,7 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js']
   },
-  plugins: [
-    new webpack.optimize.LimitChunkCountPlugin({
-      maxChunks: 1
-    })
-  ],
+  plugins: [],
   module: {
     rules: [
       {

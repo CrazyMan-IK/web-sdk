@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rimraf ./dist && webpack --config webpack.prod.js",
+    "build:tsc": "rimraf ./dist && tsc",
     "build:dev": "rimraf ./dist && webpack --config webpack.dev.js",
     "serve": "webpack serve --config webpack.dev.js",
     "lint": "eslint 'src/**/*.ts'",
