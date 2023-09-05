@@ -1,8 +1,8 @@
 {
   "name": "web-sdk",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/",
+  "main": "src/index.ts",
+  "types": "src/",
   "repository": "https://github.com/CrazyMan-IK/web-sdk",
   "author": "CrazyMan-IK <superdanik2004@gmail.com>",
   "license": "MIT",
