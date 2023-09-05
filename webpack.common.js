@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 const dist = path.join(__dirname, 'dist');
 
@@ -16,7 +17,11 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js']
   },
-  plugins: [],
+  plugins: [
+    new webpack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1
+    })
+  ],
   module: {
     rules: [
       {
