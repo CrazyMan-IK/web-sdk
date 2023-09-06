@@ -2,6 +2,14 @@
   "name": "web-sdk",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/sdk.js",
+    "./timer": "./dist/timer.js",
+    "./scaler": "./dist/scaler.js",
+    "./game-pause": "./dist/game-pause.js",
+    "./audio/*": "./dist/audio/*.js",
+    "./localization/*": "./dist/localization/*.js"
+  },
   "types": "dist/",
   "repository": "https://github.com/CrazyMan-IK/web-sdk",
   "author": "CrazyMan-IK <superdanik2004@gmail.com>",
