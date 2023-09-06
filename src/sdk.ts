@@ -484,7 +484,7 @@ export default abstract class SDK {
 
 let match = location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/);
 if (!match) {
-  match = location.hash.match(/origin=https:\/\/yandex\.ru&draft=true/);
+  match = decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.ru&draft=true/);
 }
 if (match) {
   (window as any).YaGames.init().then(async (sdk: YandexGamesSDK) => {
