@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "exports": {
-    ".": "./dist/sdk.js",
+    ".": "./dist/index.js",
+    "./sdk": "./dist/sdk.js",
     "./timer": "./dist/timer.js",
     "./scaler": "./dist/scaler.js",
     "./game-pause": "./dist/game-pause.js",
