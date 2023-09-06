@@ -379,8 +379,10 @@ export default class SDK {
         }
     }
 }
-//YANDEX app-241782.games.s3.yandex.net
-const match = location.hostname.match(/^app-\d{6}\.games\.s3\.yandex\.net$/);
+let match = location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/);
+if (!match) {
+    match = location.hash.match(/origin=https:\/\/yandex\.ru&draft=true/);
+}
 if (match) {
     window.YaGames.init().then(async (sdk) => {
         const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
