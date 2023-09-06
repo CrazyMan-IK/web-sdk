@@ -379,9 +379,11 @@ export default class SDK {
         }
     }
 }
-if ('YaGames' in window) {
+//YANDEX app-241782.games.s3.yandex.net
+const match = location.hostname.match(/^app-\d{6}\.games\.s3\.yandex\.net$/);
+if (match) {
     window.YaGames.init().then(async (sdk) => {
-        const YandexGamesSDKWrapper = (await import(/* webpackChunkName: 'yandex-sdk' */ './yandex-sdk')).default;
+        const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
         return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
     });
 }
