@@ -1,98 +1,86 @@
 import { vec2 } from './vec2';
 
-const game = document.getElementById('game') as HTMLElement;
+/* const game = document.getElementById('game') as HTMLElement;
 
 const baseSize = {
   x: 720,
   y: 1280
 };
 //const baseSizeMatch = baseSize.x / baseSize.y;
-const baseSizeMatch = 0.631;
+const baseSizeMatch = 0.631; */
 
-function lerp(a: number, b: number, t: number) {
-  return a * (1 - t) + b * t;
-}
+export default class Scaler {
+  private readonly _element: HTMLElement;
+  private readonly _baseSize: vec2;
+  private readonly _baseSizeMatch: number;
+  private _cachedScaleFactor: number = 0;
 
-function log2(n: vec2) {
-  return {
-    x: Math.log2(n.x),
-    y: Math.log2(n.y)
-  };
-}
+  constructor(element: HTMLElement, baseSize: vec2, baseSizeMatch: number) {
+    this._element = element;
+    this._baseSize = baseSize;
+    this._baseSizeMatch = baseSizeMatch;
 
-function divide(a: vec2, b: vec2) {
-  return {
-    x: a.x / b.x,
-    y: a.y / b.y
-  };
-}
+    this.resize = this.resize.bind(this);
 
-function getScaleFactor(baseSize: vec2, viewportSize: vec2, match: number) {
-  const scaleFactor = log2(divide(baseSize, viewportSize));
-  const averageScaleFactor = lerp(scaleFactor.x, scaleFactor.y, match);
+    window.addEventListener('resize', this.resize);
+    this.resize();
+  }
 
-  return Math.pow(2, averageScaleFactor);
-}
+  public getCurrentScaleFactor(): number {
+    if (this._cachedScaleFactor <= 0) {
+      const maxWidth = window.innerWidth;
+      const maxHeight = window.innerHeight;
 
-let cachedSF = 0;
+      const match = maxWidth / maxHeight >= this._baseSizeMatch ? 1 : 0;
 
-export function getCurrentScaleFactor() {
-  if (cachedSF <= 0) {
+      this._cachedScaleFactor = this.getScaleFactor(this._baseSize, { x: maxWidth, y: maxHeight }, match);
+    }
+
+    return this._cachedScaleFactor;
+  }
+
+  private getScaleFactor(baseSize: vec2, viewportSize: vec2, match: number): number {
+    const scaleFactor = this.log2(this.divide(baseSize, viewportSize));
+    const averageScaleFactor = this.lerp(scaleFactor.x, scaleFactor.y, match);
+
+    return Math.pow(2, averageScaleFactor);
+  }
+
+  private lerp(a: number, b: number, t: number): number {
+    return a * (1 - t) + b * t;
+  }
+
+  private log2(n: vec2): vec2 {
+    return {
+      x: Math.log2(n.x),
+      y: Math.log2(n.y)
+    };
+  }
+
+  private divide(a: vec2, b: vec2): vec2 {
+    return {
+      x: a.x / b.x,
+      y: a.y / b.y
+    };
+  }
+
+  private resize(): void {
     const maxWidth = window.innerWidth;
     const maxHeight = window.innerHeight;
 
-    //const match = maxWidth / maxHeight >= 0.63 ? 1 : 0;
-    const match = maxWidth / maxHeight >= baseSizeMatch ? 1 : 0;
+    this._cachedScaleFactor = 0;
 
-    cachedSF = getScaleFactor(baseSize, { x: maxWidth, y: maxHeight }, match);
+    const sf = this.getCurrentScaleFactor();
+    const sf2 = 1 / sf;
+
+    const newWidth = maxWidth / sf2;
+    const newHeight = maxHeight / sf2;
+
+    this._element.style.scale = sf2.toString();
+    this._element.style.width = `${newWidth}px`;
+    this._element.style.height = `${newHeight}px`;
+
+    this._element.style.left = `${(newWidth - maxWidth) / -2}px`;
+    this._element.style.top = `${(newHeight - maxHeight) / -2}px`;
   }
-
-  return cachedSF;
 }
-
-function resizeGame() {
-  //const aspectRatio = 720 / 1280; // Set your desired aspect ratio (e.g., 16:9)
-  const maxWidth = window.innerWidth;
-  const maxHeight = window.innerHeight;
-
-  cachedSF = 0;
-
-  const sf = getCurrentScaleFactor();
-  const sf2 = 1 / sf;
-
-  // let newWidth = maxWidth;
-  // let newHeight = maxWidth / aspectRatio;
-  const newWidth = maxWidth / sf2;
-  const newHeight = maxHeight / sf2;
-  //const newWidth2 = newWidth * (1 - sf);
-  //const newHeight2 = newHeight * (1 - sf);
-
-  // if (newHeight > maxHeight) {
-  //   newHeight = maxHeight;
-  //   newWidth = maxHeight * aspectRatio;
-  // }
-
-  // game.width = newWidth;
-  // game.height = newHeight;
-
-  //game.style.width = `${newWidth}px`;
-  //game.style.height = `${newHeight}px`;
-  game.style.scale = sf2.toString();
-  game.style.width = `${newWidth}px`;
-  game.style.height = `${newHeight}px`;
-  //game.style.maxWidth = `${baseSize.x}px`;
-  //game.style.maxHeight = `${baseSize.y}px`;
-
-  //game.style.left = `${(window.innerWidth - newWidth) / 2}px`;
-  //game.style.top = `${(window.innerHeight - newHeight) / 2}px`;
-  //720 = 0
-  //540 = 90
-  //360 = 180
-  //180 = 270
-  //90 = 315
-  game.style.left = `${(newWidth - maxWidth) / -2}px`;
-  game.style.top = `${(newHeight - maxHeight) / -2}px`;
-}
-
-window.addEventListener('resize', resizeGame);
-resizeGame();
