@@ -105,19 +105,18 @@ export default class SDK {
     static get rewardedAdReward() {
         return this._rewardedAdReward.asEvent();
     }
-    /*public static get IsAuthorized(): boolean {
-      return PlayerAccount.IsAuthorized;
+    static get isAuthorized() {
+        return this._sdk.isAuthorized;
     }
-  
-    public static get TLD(): string {
-      return YandexGamesSdk.Environment.i18n.tld;
-    }*/
-    /* public static get Lang(): string {
-      return this._sdk.environment.i18n.lang;
-    } */
-    /* public static get ID(): string {
-      return this._sdk.environment.app.id;
-    } */
+    static get tld() {
+        return this._sdk.tld;
+    }
+    static get lang() {
+        return this._sdk.lang;
+    }
+    static get id() {
+        return this._sdk.id;
+    }
     static get deviceInfo() {
         return this._sdk.deviceInfo;
     }
@@ -172,11 +171,24 @@ export default class SDK {
             onError: callbacks.onError
         });
     }
-    /*public static async getPurchasedProducts(): Promise<GetPurchasedProductsResponse> {}
-  
-    public static async getProductCatalog(): Promise<GetProductCatalogResponse> {}
-  
-    public static async purchaseProduct(productId: string, playersCount: number = 5, includeSelf: boolean = true): Promise<PurchaseProductResponse> {}*/
+    static async getPurchasedProducts() {
+        return this._sdk.getPurchasedProducts();
+    }
+    static async getProductCatalog() {
+        return this._sdk.getProductCatalog();
+    }
+    static async purchaseProduct(productId, developerPayload) {
+        return this._sdk.purchaseProduct(productId, developerPayload);
+    }
+    static async consumeProduct(purchasedProductToken) {
+        return this._sdk.consumeProduct(purchasedProductToken);
+    }
+    static async setLeaderboardScore(leaderboardName, score, extraData) {
+        return this._sdk.setLeaderboardScore(leaderboardName, score, extraData);
+    }
+    static async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {
+        return this._sdk.getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf);
+    }
     static async getValues(keys, defaultValues) {
         if (!this.isInitialized) {
             return new Promise((resolve) => {
@@ -379,14 +391,21 @@ export default class SDK {
         }
     }
 }
-let match = location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/);
-if (!match) {
-    match = decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.ru&draft=true/);
-}
-if (match) {
-    window.YaGames.init().then(async (sdk) => {
-        const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
-        return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
-    });
-}
+const isInitialized = (() => {
+    let match = location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/);
+    if (!match) {
+        match = decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.ru&draft=true/);
+    }
+    if (match) {
+        window.YaGames.init().then(async (sdk) => {
+            const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
+            return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
+        });
+        return true;
+    }
+    return false;
+})();
+/* if (!isInitialized) {
+  return SDK[STATIC_INIT](new DefaultSDKWrapper);
+} */
 //# sourceMappingURL=sdk.js.map

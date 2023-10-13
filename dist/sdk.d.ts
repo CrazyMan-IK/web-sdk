@@ -1,4 +1,5 @@
-import SDKWrapper, { DeviceInfo, InterstitialCallbacks, RewardedCallbacks } from './sdk-wrapper';
+import { IntRange } from './global';
+import SDKWrapper, { Purchase, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks } from './sdk-wrapper';
 declare const STATIC_INIT: unique symbol;
 export default abstract class SDK {
     private static readonly _adOpened;
@@ -18,12 +19,22 @@ export default abstract class SDK {
     static get adOpened(): import("ste-simple-events").ISimpleEvent<void>;
     static get adClosed(): import("ste-simple-events").ISimpleEvent<void>;
     static get rewardedAdReward(): import("ste-simple-events").ISimpleEvent<string>;
+    static get isAuthorized(): boolean;
+    static get tld(): string;
+    static get lang(): string;
+    static get id(): string;
     static get deviceInfo(): DeviceInfo;
     static get isInitialized(): boolean;
     static waitInitialization(): Promise<void>;
     static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     static showInterstitial(callbacks: InterstitialCallbacks): Promise<void>;
     static showRewarded(id: string, callbacks: RewardedCallbacks): Promise<void>;
+    static getPurchasedProducts(): Promise<Purchase[]>;
+    static getProductCatalog(): Promise<Product[]>;
+    static purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase>;
+    static consumeProduct(purchasedProductToken: string): Promise<void>;
+    static setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
+    static getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
     static getValues<T extends ([] | string[]) & (number extends T['length'] ? readonly string[] : unknown)>(keys: T, defaultValues: {
         [K in keyof T]: any;
     }): Promise<{

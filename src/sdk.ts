@@ -1,6 +1,7 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
-import Localization, { Locale } from './localization';
-import SDKWrapper, { DeviceInfo, InterstitialCallbacks, RewardedCallbacks } from './sdk-wrapper';
+import { IntRange } from './global';
+import Localization from './localization';
+import SDKWrapper, { Purchase, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks } from './sdk-wrapper';
 
 const STATIC_INIT = Symbol();
 
@@ -136,21 +137,21 @@ export default abstract class SDK {
     return this._rewardedAdReward.asEvent();
   }
 
-  /*public static get IsAuthorized(): boolean {
-    return PlayerAccount.IsAuthorized;
+  public static get isAuthorized(): boolean {
+    return this._sdk.isAuthorized;
   }
 
-  public static get TLD(): string {
-    return YandexGamesSdk.Environment.i18n.tld;
-  }*/
+  public static get tld(): string {
+    return this._sdk.tld;
+  }
 
-  /* public static get Lang(): string {
-    return this._sdk.environment.i18n.lang;
-  } */
+  public static get lang(): string {
+    return this._sdk.lang;
+  }
 
-  /* public static get ID(): string {
-    return this._sdk.environment.app.id;
-  } */
+  public static get id(): string {
+    return this._sdk.id;
+  }
 
   public static get deviceInfo(): DeviceInfo {
     return this._sdk.deviceInfo;
@@ -218,11 +219,34 @@ export default abstract class SDK {
     });
   }
 
-  /*public static async getPurchasedProducts(): Promise<GetPurchasedProductsResponse> {}
+  public static async getPurchasedProducts(): Promise<Purchase[]> {
+    return this._sdk.getPurchasedProducts();
+  }
 
-  public static async getProductCatalog(): Promise<GetProductCatalogResponse> {}
+  public static async getProductCatalog(): Promise<Product[]> {
+    return this._sdk.getProductCatalog();
+  }
 
-  public static async purchaseProduct(productId: string, playersCount: number = 5, includeSelf: boolean = true): Promise<PurchaseProductResponse> {}*/
+  public static async purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase> {
+    return this._sdk.purchaseProduct(productId, developerPayload);
+  }
+
+  public static async consumeProduct(purchasedProductToken: string): Promise<void> {
+    return this._sdk.consumeProduct(purchasedProductToken);
+  }
+
+  public static async setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void> {
+    return this._sdk.setLeaderboardScore(leaderboardName, score, extraData);
+  }
+
+  public static async getLeaderboardEntries(
+    leaderboardName: string,
+    topPlayersCount?: IntRange<1, 21>,
+    competingPlayersCount?: IntRange<1, 11>,
+    includeSelf?: boolean
+  ): Promise<LeaderboardEntries> {
+    return this._sdk.getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf);
+  }
 
   public static async getValues<T extends ([] | string[]) & (number extends T['length'] ? readonly string[] : unknown)>(
     keys: T,
@@ -482,14 +506,24 @@ export default abstract class SDK {
   }
 }
 
-let match = location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/);
-if (!match) {
-  match = decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.ru&draft=true/);
-}
-if (match) {
-  (window as any).YaGames.init().then(async (sdk: YandexGamesSDK) => {
-    const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
+const isInitialized = (() => {
+  let match = location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/);
+  if (!match) {
+    match = decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.ru&draft=true/);
+  }
+  if (match) {
+    (window as any).YaGames.init().then(async (sdk: YandexGamesSDK) => {
+      const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
 
-    return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
-  });
-}
+      return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
+    });
+
+    return true;
+  }
+
+  return false;
+})();
+
+/* if (!isInitialized) {
+  return SDK[STATIC_INIT](new DefaultSDKWrapper);
+} */
