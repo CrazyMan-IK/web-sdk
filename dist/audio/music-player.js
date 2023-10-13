@@ -16,15 +16,15 @@ export default class MusicPlayer {
     EnableMusic() {
         this._isMusicEnabled = true;
         this._sources.forEach((value) => {
-            //value.howl.play();
-            value.howl.volume(1);
+            value.howl.play();
+            //value.howl.volume(1);
         });
     }
     DisableMusic() {
         this._isMusicEnabled = false;
         this._sources.forEach((value) => {
-            //value.howl.pause();
-            value.howl.volume(0);
+            value.howl.pause();
+            //value.howl.volume(0);
         });
     }
     EnableSFX() {
