@@ -111,25 +111,29 @@ declare global {
   class YandexGamesSDK {
     public readonly features: {
       readonly LoadingAPI?: {
-        ready: () => void;
+        ready(): void;
       };
     };
 
     public readonly deviceInfo: {
       readonly type: string;
-      isDesktop: () => boolean;
-      isMobile: () => boolean;
-      isTablet: () => boolean;
-      isTV: () => boolean;
+      isDesktop(): boolean;
+      isMobile(): boolean;
+      isTablet(): boolean;
+      isTV(): boolean;
     };
 
     public readonly adv: {
-      showFullscreenAdv: (params: {
+      showFullscreenAdv(params: {
         callbacks?: { onOpen?: () => void; onClose?: (wasShown: boolean) => void; onError?: (error: Error) => void; onOffline?: () => void };
-      }) => void;
-      showRewardedVideo: (params: {
+      }): void;
+      showRewardedVideo(params: {
         callbacks?: { onOpen?: () => void; onRewarded?: () => void; onClose?: (wasShown: boolean) => void; onError?: (error: Error) => void };
-      }) => void;
+      }): void;
+    };
+
+    public readonly auth: {
+      openAuthDialog(): Promise<void>;
     };
 
     public readonly environment: {

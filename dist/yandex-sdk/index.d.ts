@@ -31,6 +31,8 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     get isDraft(): boolean;
     initialize(): Promise<void>;
     ready(): void;
+    isMe(uniqueID: string): Promise<boolean>;
+    authorizePlayer(): Promise<void>;
     showInterstitial(callbacks?: InterstitialCallbacks): void;
     showRewarded(callbacks?: InterstitialCallbacks): void;
     getPlayer(): Promise<Player>;

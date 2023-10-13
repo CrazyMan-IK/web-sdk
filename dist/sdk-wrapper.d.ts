@@ -79,6 +79,8 @@ export default abstract class SDKWrapper {
     abstract get isAuthorized(): boolean;
     abstract initialize(): Promise<void>;
     abstract ready(): void;
+    abstract isMe(uniqueID: string): Promise<boolean>;
+    abstract authorizePlayer(): Promise<void>;
     abstract showInterstitial(callbacks?: InterstitialCallbacks): void;
     abstract showRewarded(callbacks?: RewardedCallbacks): void;
     abstract getPurchasedProducts(): Promise<Purchase[]>;

@@ -26,6 +26,8 @@ export default abstract class SDK {
     static get deviceInfo(): DeviceInfo;
     static get isInitialized(): boolean;
     static waitInitialization(): Promise<void>;
+    static isMe(uniqueID: string): Promise<boolean>;
+    static authorizePlayer(): Promise<void>;
     static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     static showInterstitial(callbacks: InterstitialCallbacks): Promise<void>;
     static showRewarded(id: string, callbacks: RewardedCallbacks): Promise<void>;

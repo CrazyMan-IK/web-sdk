@@ -179,7 +179,13 @@ export default abstract class SDK {
     return promise;
   }
 
-  //public static async authorizePlayer(): Promise<void> {}
+  public static async isMe(uniqueID: string): Promise<boolean> {
+    return this._sdk.isMe(uniqueID);
+  }
+
+  public static async authorizePlayer(): Promise<void> {
+    return this._sdk.authorizePlayer();
+  }
 
   public static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
     window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);

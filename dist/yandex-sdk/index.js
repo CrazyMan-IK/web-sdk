@@ -78,6 +78,14 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     ready() {
         this._sdk.features.LoadingAPI?.ready();
     }
+    async isMe(uniqueID) {
+        return this.getPlayer()
+            .then((player) => player.getUniqueID() == uniqueID)
+            .catch(() => false);
+    }
+    async authorizePlayer() {
+        return this._sdk.auth.openAuthDialog();
+    }
     showInterstitial(callbacks) {
         this._sdk.adv.showFullscreenAdv({ callbacks });
     }

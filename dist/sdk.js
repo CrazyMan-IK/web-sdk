@@ -136,7 +136,12 @@ export default class SDK {
         });
         return promise;
     }
-    //public static async authorizePlayer(): Promise<void> {}
+    static async isMe(uniqueID) {
+        return this._sdk.isMe(uniqueID);
+    }
+    static async authorizePlayer() {
+        return this._sdk.authorizePlayer();
+    }
     static sendAnalyticsEvent(eventName, data) {
         window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
         console.log(`Analytic event sended (${eventName}) with data: ${data}`);
