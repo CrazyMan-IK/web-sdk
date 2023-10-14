@@ -13,7 +13,7 @@ export default class MusicPlayer {
     EnableSFX(): void;
     DisableSFX(): void;
     SwitchTo(src?: string | string[], isLooped?: boolean, speed?: number, killPrevious?: boolean): void;
-    PlaySFX(src: string | string[], volumeScale?: number, isLooped?: boolean, fadeSpeed?: number): SFX | undefined;
+    PlaySFX(src: string | string[], volumeScale?: number, isLooped?: boolean, pitch?: number, fadeSpeed?: number): SFX | undefined;
     private createHowl;
     private onSFXStopped;
 }

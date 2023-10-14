@@ -12,6 +12,7 @@ export default class MusicPlayer {
     _isSfxEnabled = true;
     constructor(maxVolume) {
         this._maxVolume = maxVolume;
+        this.onSFXStopped = this.onSFXStopped.bind(this);
     }
     EnableMusic() {
         this._isMusicEnabled = true;
@@ -85,7 +86,7 @@ export default class MusicPlayer {
         }
         this.createHowl(src, this._maxVolume, isLooped, speed);
     }
-    PlaySFX(src, volumeScale = 0.75, isLooped = false, fadeSpeed = 1.0 /*, Vector3 position = default*/) {
+    PlaySFX(src, volumeScale = 0.75, isLooped = false, pitch = 1.0, fadeSpeed = 1.0 /*, Vector3 position = default*/) {
         if (!src) {
             return undefined;
         }
@@ -99,12 +100,16 @@ export default class MusicPlayer {
         if (!isLooped) {
             const oneTimeSFX = this._oneTimeSFXs.get(src);
             if (oneTimeSFX) {
+                const oldPitch = oneTimeSFX.rate();
+                oneTimeSFX.rate(pitch);
                 oneTimeSFX.play();
+                oneTimeSFX.rate(oldPitch);
                 return undefined;
             }
             const howl = new Howl({
                 src: src,
-                volume: volumeScale
+                volume: volumeScale,
+                rate: pitch
             });
             howl.play();
             this._oneTimeSFXs.set(src, howl);
@@ -114,12 +119,13 @@ export default class MusicPlayer {
         if (!howl) {
             return undefined;
         }
+        howl.howl.rate(pitch, undefined);
         sfx = new SFX(howl.howl, src);
         /*{
               Position = position
           }*/
         this._sfxs.set(src, sfx);
-        sfx.stopped.subscribe(this.onSFXStopped.bind(this));
+        sfx.stopped.subscribe(this.onSFXStopped);
         return sfx;
     }
     createHowl(src, volumeScale = 1, isLooped = true, speed = 0.25, isSfx = false) {
