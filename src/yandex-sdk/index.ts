@@ -1,6 +1,6 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries } from '../sdk-wrapper';
+import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
 
 export default class YandexGamesSDKWrapper extends SDKWrapper {
   private readonly _sdk: YandexGamesSDK;
@@ -111,7 +111,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     this._sdk.adv.showFullscreenAdv({ callbacks });
   }
 
-  public showRewarded(callbacks?: InterstitialCallbacks): void {
+  public showRewarded(callbacks?: RewardedCallbacks): void {
     this._sdk.adv.showRewardedVideo({ callbacks });
   }
 

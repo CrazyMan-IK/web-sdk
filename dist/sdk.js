@@ -410,7 +410,10 @@ const isInitialized = (() => {
     }
     return false;
 })();
-/* if (!isInitialized) {
-  return SDK[STATIC_INIT](new DefaultSDKWrapper);
-} */
+if (!isInitialized) {
+    (async () => {
+        const DefaultSDKWrapper = (await import('./default-sdk')).default;
+        return SDK[STATIC_INIT](new DefaultSDKWrapper());
+    })();
+}
 //# sourceMappingURL=sdk.js.map
