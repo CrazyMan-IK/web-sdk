@@ -13,7 +13,7 @@ module.exports = {
     //libraryTarget: 'module',
     library: {
       name: 'SDK',
-      type: 'var',
+      type: 'umd',
       export: 'default'
     },
     chunkFormat: 'array-push',
