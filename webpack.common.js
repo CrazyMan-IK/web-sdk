@@ -1,6 +1,6 @@
 const path = require('path');
 
-const dist = path.join(__dirname, 'dist');
+const dist = path.join(__dirname, 'lib-dist');
 
 module.exports = {
   entry: {
@@ -10,13 +10,18 @@ module.exports = {
     //filename: 'bundle.js',
     filename: '[name].js',
     //library: 'web-sdk',
-    libraryTarget: 'module',
-    chunkFormat: 'module',
+    //libraryTarget: 'module',
+    library: {
+      name: 'SDK',
+      type: 'var',
+      export: 'default'
+    },
+    chunkFormat: 'array-push',
     path: dist
   },
-  experiments: {
+  /* experiments: {
     outputModule: true
-  },
+  }, */
   resolve: {
     extensions: ['.ts', '.js']
   },
@@ -33,20 +38,25 @@ module.exports = {
               end: 'DEV_END'
             }
           },
-          'ts-loader'
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: 'wp-tsconfig.json'
+            }
+          }
         ]
       }
     ]
   },
   optimization: {
-    minimize: false,
+    //minimize: false,
     minimizer: ['...'],
-    sideEffects: true,
-    splitChunks: {
+    sideEffects: true
+    /* splitChunks: {
       chunks: 'all'
-    }
+    } */
   },
-  target: 'node'
+  target: 'web'
   //mode: 'production'
   //mode: 'development'
 };

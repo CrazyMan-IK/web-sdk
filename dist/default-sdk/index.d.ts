@@ -2,6 +2,7 @@ import { IntRange } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, { InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
+    static readonly UniquePlayerID: string;
     private readonly _lang;
     private readonly _tld;
     private readonly _isDraft;

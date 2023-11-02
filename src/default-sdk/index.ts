@@ -3,6 +3,8 @@ import { Locale } from '../localization';
 import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, LeaderboardEntry, RewardedCallbacks } from '../sdk-wrapper';
 
 export default class DefaultSDKWrapper extends SDKWrapper {
+  public static readonly UniquePlayerID: string = 'UniquePlayerID';
+
   private readonly _lang: string;
   private readonly _tld: string;
   private readonly _isDraft: boolean;
@@ -124,7 +126,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public async isMe(uniqueID: string): Promise<boolean> {
-    return Promise.resolve(true);
+    return uniqueID == DefaultSDKWrapper.UniquePlayerID;
   }
 
   public async authorizePlayer(): Promise<void> {
@@ -164,10 +166,14 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public async consumeProduct(purchasedProductToken: string): Promise<void> {
+    console.log(`Product with token (${purchasedProductToken}) consumed`);
+
     return Promise.resolve();
   }
 
   public async setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void> {
+    console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
+
     return Promise.resolve();
   }
 
@@ -207,6 +213,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     };
 
     competingPlayersCount ??= 5;
+    const me = includeSelf ? Math.floor(Math.random() * competingPlayersCount + 1) : -1;
     for (let i = competingPlayersCount; i > 0; i--) {
       const entry: LeaderboardEntry = {
         score: Math.random() * 1000 + 1000 * i,
@@ -222,7 +229,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
             public_name: 'allow'
           },
 
-          uniqueID: '',
+          uniqueID: i == me ? DefaultSDKWrapper.UniquePlayerID : '',
 
           getAvatarSrc(size: 'small' | 'medium' | 'large'): string {
             return 'https://i.pravatar.cc/256';

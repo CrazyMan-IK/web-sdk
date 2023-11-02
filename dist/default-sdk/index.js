@@ -1,6 +1,7 @@
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
+    static UniquePlayerID = 'UniquePlayerID';
     _lang;
     _tld;
     _isDraft;
@@ -106,7 +107,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         //
     }
     async isMe(uniqueID) {
-        return Promise.resolve(true);
+        return uniqueID == DefaultSDKWrapper.UniquePlayerID;
     }
     async authorizePlayer() {
         return Promise.resolve();
@@ -137,9 +138,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         });
     }
     async consumeProduct(purchasedProductToken) {
+        console.log(`Product with token (${purchasedProductToken}) consumed`);
         return Promise.resolve();
     }
     async setLeaderboardScore(leaderboardName, score, extraData) {
+        console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
         return Promise.resolve();
     }
     async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {
@@ -167,6 +170,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
             entries: []
         };
         competingPlayersCount ??= 5;
+        const me = includeSelf ? Math.floor(Math.random() * competingPlayersCount + 1) : -1;
         for (let i = competingPlayersCount; i > 0; i--) {
             const entry = {
                 score: Math.random() * 1000 + 1000 * i,
@@ -179,7 +183,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
                         avatar: 'allow',
                         public_name: 'allow'
                     },
-                    uniqueID: '',
+                    uniqueID: i == me ? DefaultSDKWrapper.UniquePlayerID : '',
                     getAvatarSrc(size) {
                         return 'https://i.pravatar.cc/256';
                     },
