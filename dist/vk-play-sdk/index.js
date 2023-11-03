@@ -17,19 +17,19 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         this._callbacks = {
             appid: this._appID,
             getLoginStatusCallback(status) {
-                console.log(`getLoginStatusCallback(${status})`);
+                console.log(`getLoginStatusCallback(${JSON.stringify(status)})`);
             },
             registerUserCallback(info) {
-                console.log(`registerUserCallback(${info})`);
+                console.log(`registerUserCallback(${JSON.stringify(info)})`);
             },
             getAuthTokenCallback(token) {
-                console.log(`getAuthTokenCallback(${token})`);
+                console.log(`getAuthTokenCallback(${JSON.stringify(token)})`);
             },
             userInfoCallback(info) {
-                console.log(`userInfoCallback(${info})`);
+                console.log(`userInfoCallback(${JSON.stringify(info)})`);
             },
             paymentReceivedCallback(data) {
-                console.log(`paymentReceivedCallback(${data})`);
+                console.log(`paymentReceivedCallback(${JSON.stringify(data)})`);
             },
             paymentWindowClosedCallback() {
                 console.log('paymentWindowClosedCallback');
@@ -44,13 +44,13 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                 console.log('getGameInventoryItems');
             },
             userProfileCallback(profile) {
-                console.log(`userProfileCallback(${profile})`);
+                console.log(`userProfileCallback(${JSON.stringify(profile)})`);
             },
             userFriendsCallback(profile) {
-                console.log(`userFriendsCallback(${profile})`);
+                console.log(`userFriendsCallback(${JSON.stringify(profile)})`);
             },
             userSocialFriendsCallback(profile) {
-                console.log(`userSocialFriendsCallback(${profile})`);
+                console.log(`userSocialFriendsCallback(${JSON.stringify(profile)})`);
             }
         };
     }
@@ -101,11 +101,11 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     .iframeApi(this._callbacks, { debug: this._isDraft })
                     .then((sdk) => {
                     this._sdk = sdk;
+                    resolve();
                 })
                     .catch((err) => {
                     throw new Error('Could not init external api ' + err);
                 });
-                resolve();
             });
         });
     }
