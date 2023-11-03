@@ -2,11 +2,11 @@ import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class YandexGamesSDKWrapper extends SDKWrapper {
     _sdk;
+    _isDraft = false;
     _player = null;
     _payments = null;
     _leaderboards = null;
     _isAuthorized = false;
-    _isDraft = false;
     constructor(sdk) {
         super();
         this._sdk = sdk;
@@ -56,6 +56,32 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         return this._isDraft;
     }
     async initialize() {
+        window.yandexMetricaCounterId = 0;
+        (function (m, e, t, r, i, k, a) {
+            m[i] =
+                m[i] ||
+                    function (...rest) {
+                        (m[i].a = m[i].a || []).push(...rest);
+                    };
+            m[i].l = new Date().getTime();
+            for (let j = 0; j < document.scripts.length; j++) {
+                if (document.scripts[j].src === r) {
+                    return;
+                }
+            }
+            (k = e.createElement(t)), (a = e.getElementsByTagName(t)[0]), (k.async = 1), (k.src = r), a.parentNode.insertBefore(k, a);
+        })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+        window.ym(window.yandexMetricaCounterId, 'init', {
+            clickmap: true,
+            trackLinks: true,
+            accurateTrackBounce: true
+        });
+        window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageOpen');
+        window.addEventListener('DOMContentLoaded', () => {
+            const navigationTiming = performance.getEntriesByType('navigation')[0];
+            const pageLoadTime = navigationTiming.domContentLoadedEventStart - navigationTiming.startTime; // performance.timing.domContentLoadedEventStart - performance.timing.navigationStart;
+            window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageLoad', { pageLoadTime: pageLoadTime / 1000 });
+        });
         this.getPlayer();
         /*const leaderboardInitializationPromise = this._sdk
           .getLeaderboards()
@@ -78,6 +104,15 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     ready() {
         this._sdk.features.LoadingAPI?.ready();
     }
+    gameplayStart() {
+        console.log('Gameplay Start');
+    }
+    gameplayStop() {
+        console.log('Gameplay Stop');
+    }
+    happyTime() {
+        console.log('Happy Time');
+    }
     async isMe(uniqueID) {
         return this.getPlayer()
             .then((player) => player.getUniqueID() == uniqueID)
@@ -86,11 +121,20 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     async authorizePlayer() {
         return this._sdk.auth.openAuthDialog();
     }
+    sendAnalyticsEvent(eventName, data) {
+        window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
+    }
     showInterstitial(callbacks) {
         this._sdk.adv.showFullscreenAdv({ callbacks });
     }
     showRewarded(callbacks) {
         this._sdk.adv.showRewardedVideo({ callbacks });
+    }
+    async canReview() {
+        return this._sdk.feedback.canReview();
+    }
+    async requestReview() {
+        return this._sdk.feedback.requestReview();
     }
     async getPlayer() {
         if (this._player !== null) {

@@ -79,10 +79,18 @@ export default abstract class SDKWrapper {
     abstract get isAuthorized(): boolean;
     abstract initialize(): Promise<void>;
     abstract ready(): void;
+    abstract gameplayStart(): void;
+    abstract gameplayStop(): void;
+    abstract happyTime(): void;
     abstract isMe(uniqueID: string): Promise<boolean>;
     abstract authorizePlayer(): Promise<void>;
+    abstract sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     abstract showInterstitial(callbacks?: InterstitialCallbacks): void;
     abstract showRewarded(callbacks?: RewardedCallbacks): void;
+    abstract canReview(): Promise<boolean>;
+    abstract requestReview(): Promise<{
+        feedbackSent: boolean;
+    }>;
     abstract getPurchasedProducts(): Promise<Purchase[]>;
     abstract getProductCatalog(): Promise<Product[]>;
     abstract purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;

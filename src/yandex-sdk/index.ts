@@ -1,15 +1,24 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
+import { YandexGamesSDK, Player, Payments, Leaderboards } from './yandex-sdk-definitions';
+
+declare global {
+  interface Window {
+    ym(counterId: number, arg: string, data?: Record<string, any>): void;
+    ym(counterId: number, arg: string, eventName: string, data?: Record<string, any>): void;
+    yandexMetricaCounterId: number;
+  }
+}
 
 export default class YandexGamesSDKWrapper extends SDKWrapper {
   private readonly _sdk: YandexGamesSDK;
+  private readonly _isDraft: boolean = false;
 
   private _player: Player | null = null;
   private _payments: Payments | null = null;
   private _leaderboards: Leaderboards | null = null;
   private _isAuthorized: boolean = false;
-  private _isDraft: boolean = false;
 
   public constructor(sdk: YandexGamesSDK) {
     super();
@@ -72,6 +81,37 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
   }
 
   public async initialize(): Promise<void> {
+    window.yandexMetricaCounterId = 0;
+
+    (function (m: any, e: any, t: any, r: any, i: any, k?: any, a?: any) {
+      m[i] =
+        m[i] ||
+        function (...rest: any[]) {
+          (m[i].a = m[i].a || []).push(...rest);
+        };
+      m[i].l = new Date().getTime();
+      for (let j = 0; j < document.scripts.length; j++) {
+        if (document.scripts[j].src === r) {
+          return;
+        }
+      }
+      (k = e.createElement(t)), (a = e.getElementsByTagName(t)[0]), (k.async = 1), (k.src = r), a.parentNode.insertBefore(k, a);
+    })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+
+    window.ym(window.yandexMetricaCounterId, 'init', {
+      clickmap: true,
+      trackLinks: true,
+      accurateTrackBounce: true
+    });
+
+    window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageOpen');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const navigationTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const pageLoadTime = navigationTiming.domContentLoadedEventStart - navigationTiming.startTime; // performance.timing.domContentLoadedEventStart - performance.timing.navigationStart;
+      window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageLoad', { pageLoadTime: pageLoadTime / 1000 });
+    });
+
     this.getPlayer();
 
     /*const leaderboardInitializationPromise = this._sdk
@@ -97,6 +137,18 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     this._sdk.features.LoadingAPI?.ready();
   }
 
+  public gameplayStart(): void {
+    console.log('Gameplay Start');
+  }
+
+  public gameplayStop(): void {
+    console.log('Gameplay Stop');
+  }
+
+  public happyTime(): void {
+    console.log('Happy Time');
+  }
+
   public async isMe(uniqueID: string): Promise<boolean> {
     return this.getPlayer()
       .then((player) => player.getUniqueID() == uniqueID)
@@ -107,12 +159,24 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     return this._sdk.auth.openAuthDialog();
   }
 
+  public sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
+    window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
+  }
+
   public showInterstitial(callbacks?: InterstitialCallbacks): void {
     this._sdk.adv.showFullscreenAdv({ callbacks });
   }
 
   public showRewarded(callbacks?: RewardedCallbacks): void {
     this._sdk.adv.showRewardedVideo({ callbacks });
+  }
+
+  public async canReview(): Promise<boolean> {
+    return this._sdk.feedback.canReview();
+  }
+
+  public async requestReview(): Promise<{ feedbackSent: boolean }> {
+    return this._sdk.feedback.requestReview();
   }
 
   public async getPlayer(): Promise<Player> {
@@ -186,6 +250,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
       return leaderboards.setLeaderboardScore(leaderboardName, score, extraData);
     });
   }
+
   public async getLeaderboardEntries(
     leaderboardName: string,
     topPlayersCount?: IntRange<1, 21>,

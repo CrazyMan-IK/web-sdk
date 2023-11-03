@@ -408,6 +408,14 @@ const isInitialized = (() => {
         });
         return true;
     }
+    match = location.href.match(/appid=(\d+)/);
+    if (match && location.href.search('platform=VKPlay')) {
+        (async () => {
+            const VKPlaySDKWrapper = (await import('./vk-play-sdk')).default;
+            return SDK[STATIC_INIT](new VKPlaySDKWrapper());
+        })();
+        return true;
+    }
     return false;
 })();
 if (!isInitialized) {

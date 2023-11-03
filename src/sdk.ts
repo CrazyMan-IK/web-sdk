@@ -2,6 +2,8 @@ import { SimpleEventDispatcher } from 'ste-simple-events';
 import { IntRange } from './global';
 import Localization from './localization';
 import SDKWrapper, { Purchase, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks } from './sdk-wrapper';
+import { YandexGamesSDK } from './yandex-sdk/yandex-sdk-definitions';
+import { VKPlaySDK } from './vk-play-sdk/vk-play-sdk-definitions';
 
 const STATIC_INIT = Symbol();
 
@@ -523,6 +525,16 @@ const isInitialized = (() => {
 
       return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
     });
+
+    return true;
+  }
+  match = location.href.match(/appid=(\d+)/);
+  if (match && location.href.search('platform=VKPlay')) {
+    (async () => {
+      const VKPlaySDKWrapper = (await import('./vk-play-sdk')).default;
+
+      return SDK[STATIC_INIT](new VKPlaySDKWrapper());
+    })();
 
     return true;
   }

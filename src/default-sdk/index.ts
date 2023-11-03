@@ -122,7 +122,19 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public ready(): void {
-    //
+    console.log('Ready');
+  }
+
+  public gameplayStart(): void {
+    console.log('Gameplay Start');
+  }
+
+  public gameplayStop(): void {
+    console.log('Gameplay Stop');
+  }
+
+  public happyTime(): void {
+    console.log('Happy Time');
   }
 
   public async isMe(uniqueID: string): Promise<boolean> {
@@ -130,7 +142,13 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public async authorizePlayer(): Promise<void> {
+    this._isAuthorized = true;
+
     return Promise.resolve();
+  }
+
+  public sendAnalyticsEvent(eventName: string, data?: Record<string, any> | undefined): void {
+    console.log(`Analytic event sended (${eventName}) with data: ${data}`);
   }
 
   public showInterstitial(callbacks?: InterstitialCallbacks): void {
@@ -146,6 +164,16 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     callbacks?.onClose?.(true);
 
     console.log('Rewarded Showed');
+  }
+
+  public async canReview(): Promise<boolean> {
+    return Promise.resolve(Math.round(Math.random()) != 0);
+  }
+
+  public async requestReview(): Promise<{ feedbackSent: boolean }> {
+    console.log('Review requested');
+
+    return Promise.resolve({ feedbackSent: Math.round(Math.random()) != 0 });
   }
 
   public async getPurchasedProducts(): Promise<Purchase[]> {

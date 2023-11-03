@@ -104,13 +104,26 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         return Promise.resolve();
     }
     ready() {
-        //
+        console.log('Ready');
+    }
+    gameplayStart() {
+        console.log('Gameplay Start');
+    }
+    gameplayStop() {
+        console.log('Gameplay Stop');
+    }
+    happyTime() {
+        console.log('Happy Time');
     }
     async isMe(uniqueID) {
         return uniqueID == DefaultSDKWrapper.UniquePlayerID;
     }
     async authorizePlayer() {
+        this._isAuthorized = true;
         return Promise.resolve();
+    }
+    sendAnalyticsEvent(eventName, data) {
+        console.log(`Analytic event sended (${eventName}) with data: ${data}`);
     }
     showInterstitial(callbacks) {
         callbacks?.onOpen?.();
@@ -122,6 +135,13 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         callbacks?.onRewarded?.();
         callbacks?.onClose?.(true);
         console.log('Rewarded Showed');
+    }
+    async canReview() {
+        return Promise.resolve(Math.round(Math.random()) != 0);
+    }
+    async requestReview() {
+        console.log('Review requested');
+        return Promise.resolve({ feedbackSent: Math.round(Math.random()) != 0 });
     }
     async getPurchasedProducts() {
         return Promise.resolve([]);

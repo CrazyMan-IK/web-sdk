@@ -15,10 +15,18 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     get isAuthorized(): boolean;
     initialize(): Promise<void>;
     ready(): void;
+    gameplayStart(): void;
+    gameplayStop(): void;
+    happyTime(): void;
     isMe(uniqueID: string): Promise<boolean>;
     authorizePlayer(): Promise<void>;
+    sendAnalyticsEvent(eventName: string, data?: Record<string, any> | undefined): void;
     showInterstitial(callbacks?: InterstitialCallbacks): void;
     showRewarded(callbacks?: RewardedCallbacks): void;
+    canReview(): Promise<boolean>;
+    requestReview(): Promise<{
+        feedbackSent: boolean;
+    }>;
     getPurchasedProducts(): Promise<Purchase[]>;
     getProductCatalog(): Promise<Product[]>;
     purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;

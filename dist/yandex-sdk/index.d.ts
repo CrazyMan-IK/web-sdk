@@ -1,13 +1,21 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
+import { YandexGamesSDK, Player, Payments, Leaderboards } from './yandex-sdk-definitions';
+declare global {
+    interface Window {
+        ym(counterId: number, arg: string, data?: Record<string, any>): void;
+        ym(counterId: number, arg: string, eventName: string, data?: Record<string, any>): void;
+        yandexMetricaCounterId: number;
+    }
+}
 export default class YandexGamesSDKWrapper extends SDKWrapper {
     private readonly _sdk;
+    private readonly _isDraft;
     private _player;
     private _payments;
     private _leaderboards;
     private _isAuthorized;
-    private _isDraft;
     constructor(sdk: YandexGamesSDK);
     get locale(): Locale;
     get lang(): string;
@@ -31,10 +39,18 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     get isDraft(): boolean;
     initialize(): Promise<void>;
     ready(): void;
+    gameplayStart(): void;
+    gameplayStop(): void;
+    happyTime(): void;
     isMe(uniqueID: string): Promise<boolean>;
     authorizePlayer(): Promise<void>;
+    sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     showInterstitial(callbacks?: InterstitialCallbacks): void;
     showRewarded(callbacks?: RewardedCallbacks): void;
+    canReview(): Promise<boolean>;
+    requestReview(): Promise<{
+        feedbackSent: boolean;
+    }>;
     getPlayer(): Promise<Player>;
     getPayments(): Promise<Payments>;
     getLeaderboards(): Promise<Leaderboards>;
