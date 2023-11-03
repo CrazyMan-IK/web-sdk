@@ -70,8 +70,6 @@ declare global {
         iframeApi(myApi: CallbacksContainer, options: {
             debug: boolean;
         }): Promise<VKPlaySDK>;
-        ym(counterId: number, arg: string, eventName: string, data?: Record<string, any>): void;
-        yandexMetricaCounterId: number;
     }
 }
 export default class VKPlaySDKWrapper extends SDKWrapper {

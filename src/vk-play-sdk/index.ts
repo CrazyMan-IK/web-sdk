@@ -61,8 +61,6 @@ type CallbacksContainer = {
 declare global {
   interface Window {
     iframeApi(myApi: CallbacksContainer, options: { debug: boolean }): Promise<VKPlaySDK>;
-    ym(counterId: number, arg: string, eventName: string, data?: Record<string, any>): void;
-    yandexMetricaCounterId: number;
   }
 }
 
@@ -254,7 +252,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   }
 
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
-    window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
+    console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
   }
 
   public showInterstitial(callbacks?: InterstitialCallbacks): void {

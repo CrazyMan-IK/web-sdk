@@ -158,7 +158,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         return Promise.resolve();
     }
     sendAnalyticsEvent(eventName, data) {
-        window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
+        console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
     }
     showInterstitial(callbacks) {
         this._adsCallbackReceived.one((context) => {
