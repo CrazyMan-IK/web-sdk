@@ -11,7 +11,7 @@ type UserInfo = {
     status: 'ok';
     uid: number;
     hash: string;
-} | VKError;
+};
 type BaseUserProfile = {
     nick: string;
     slug: string;
@@ -33,13 +33,19 @@ type CallbacksContainer = {
         status: 'ok';
         loginStatus: 0 | 1 | 2 | 3;
     } | VKError): void;
-    registerUserCallback(info: UserInfo): void;
+    registerUserCallback(info: UserInfo | VKError): void;
     getAuthTokenCallback(token: {
         status: 'ok';
         uid: number;
         hash: string;
     } | VKError): void;
-    userInfoCallback(info: UserInfo): void;
+    userInfoCallback(info: UserInfo | VKError): void;
+    adsCallback(context: {
+        type: 'adCompleted' | 'adDismissed';
+    } | {
+        type: 'adError';
+        code: 'UndefinedAdError' | 'AdblockDetectedAdError' | 'WaterfallConfigLoadFailed';
+    }): void;
     paymentReceivedCallback(data: {
         uid: number;
     }): void;
@@ -69,6 +75,19 @@ declare global {
     }
 }
 export default class VKPlaySDKWrapper extends SDKWrapper {
+    private readonly _getLoginStatusCallbackReceived;
+    private readonly _registerUserCallbackReceived;
+    private readonly _getAuthTokenCallbackReceived;
+    private readonly _userInfoCallbackReceived;
+    private readonly _adsCallbackReceived;
+    private readonly _paymentReceivedCallbackReceived;
+    private readonly _paymentWindowClosedCallbackReceived;
+    private readonly _confirmWindowClosedCallbackReceived;
+    private readonly _userConfirmCallbackReceived;
+    private readonly _getGameInventoryItemsReceived;
+    private readonly _userProfileCallbackReceived;
+    private readonly _userFriendsCallbackReceived;
+    private readonly _userSocialFriendsCallbackReceived;
     private readonly _isDraft;
     private readonly _appID;
     private readonly _lang;

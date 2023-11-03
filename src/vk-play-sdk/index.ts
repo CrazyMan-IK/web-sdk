@@ -1,3 +1,4 @@
+import { SimpleEventDispatcher } from 'ste-simple-events';
 import { IntRange } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, LeaderboardEntry, RewardedCallbacks } from '../sdk-wrapper';
@@ -9,13 +10,11 @@ type VKError = {
   errmsg: string;
 };
 
-type UserInfo =
-  | {
-      status: 'ok';
-      uid: number;
-      hash: string;
-    }
-  | VKError;
+type UserInfo = {
+  status: 'ok';
+  uid: number;
+  hash: string;
+};
 
 type BaseUserProfile = {
   nick: string;
@@ -40,9 +39,13 @@ type CallbacksContainer = {
   readonly appid: string;
 
   getLoginStatusCallback(status: { status: 'ok'; loginStatus: 0 | 1 | 2 | 3 } | VKError): void;
-  registerUserCallback(info: UserInfo): void;
+  registerUserCallback(info: UserInfo | VKError): void;
   getAuthTokenCallback(token: { status: 'ok'; uid: number; hash: string } | VKError): void;
-  userInfoCallback(info: UserInfo): void;
+  userInfoCallback(info: UserInfo | VKError): void;
+
+  adsCallback(
+    context: { type: 'adCompleted' | 'adDismissed' } | { type: 'adError'; code: 'UndefinedAdError' | 'AdblockDetectedAdError' | 'WaterfallConfigLoadFailed' }
+  ): void;
 
   paymentReceivedCallback(data: { uid: number }): void;
   paymentWindowClosedCallback(): void;
@@ -64,6 +67,23 @@ declare global {
 }
 
 export default class VKPlaySDKWrapper extends SDKWrapper {
+  private readonly _getLoginStatusCallbackReceived: SimpleEventDispatcher<{ status: 'ok'; loginStatus: 0 | 1 | 2 | 3 } | VKError> = new SimpleEventDispatcher();
+  private readonly _registerUserCallbackReceived: SimpleEventDispatcher<UserInfo | VKError> = new SimpleEventDispatcher();
+  private readonly _getAuthTokenCallbackReceived: SimpleEventDispatcher<{ status: 'ok'; uid: number; hash: string } | VKError> = new SimpleEventDispatcher();
+  private readonly _userInfoCallbackReceived: SimpleEventDispatcher<UserInfo | VKError> = new SimpleEventDispatcher();
+  private readonly _adsCallbackReceived: SimpleEventDispatcher<
+    { type: 'adCompleted' | 'adDismissed' } | { type: 'adError'; code: 'UndefinedAdError' | 'AdblockDetectedAdError' | 'WaterfallConfigLoadFailed' }
+  > = new SimpleEventDispatcher();
+  private readonly _paymentReceivedCallbackReceived: SimpleEventDispatcher<{ uid: number }> = new SimpleEventDispatcher();
+  private readonly _paymentWindowClosedCallbackReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _confirmWindowClosedCallbackReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _userConfirmCallbackReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _getGameInventoryItemsReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _userProfileCallbackReceived: SimpleEventDispatcher<({ status: 'ok' } & ExtendedUserProfile) | VKError> = new SimpleEventDispatcher();
+  private readonly _userFriendsCallbackReceived: SimpleEventDispatcher<{ status: 'ok'; friends: CommonUserProfile[] } | VKError> = new SimpleEventDispatcher();
+  private readonly _userSocialFriendsCallbackReceived: SimpleEventDispatcher<{ status: 'ok'; friends: SocialUserProfile[] } | VKError> =
+    new SimpleEventDispatcher();
+
   private readonly _isDraft: boolean;
   private readonly _appID: string;
   private readonly _lang: string;
@@ -85,43 +105,60 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     this._callbacks = {
       appid: this._appID,
 
-      getLoginStatusCallback(status) {
+      getLoginStatusCallback: (status) => {
+        this._getLoginStatusCallbackReceived.dispatch(status);
         console.log(`getLoginStatusCallback(${JSON.stringify(status)})`);
       },
-      registerUserCallback(info) {
+      registerUserCallback: (info) => {
+        this._registerUserCallbackReceived.dispatch(info);
         console.log(`registerUserCallback(${JSON.stringify(info)})`);
       },
-      getAuthTokenCallback(token) {
+      getAuthTokenCallback: (token) => {
+        this._getAuthTokenCallbackReceived.dispatch(token);
         console.log(`getAuthTokenCallback(${JSON.stringify(token)})`);
       },
-      userInfoCallback(info) {
+      userInfoCallback: (info) => {
+        this._userInfoCallbackReceived.dispatch(info);
         console.log(`userInfoCallback(${JSON.stringify(info)})`);
       },
 
-      paymentReceivedCallback(data) {
+      adsCallback: (context) => {
+        this._adsCallbackReceived.dispatch(context);
+        console.log(`adsCallback(${JSON.stringify(context)})`);
+      },
+
+      paymentReceivedCallback: (data) => {
+        this._paymentReceivedCallbackReceived.dispatch(data);
         console.log(`paymentReceivedCallback(${JSON.stringify(data)})`);
       },
-      paymentWindowClosedCallback() {
+      paymentWindowClosedCallback: () => {
+        this._paymentWindowClosedCallbackReceived.dispatch();
         console.log('paymentWindowClosedCallback');
       },
-      confirmWindowClosedCallback() {
+      confirmWindowClosedCallback: () => {
+        this._confirmWindowClosedCallbackReceived.dispatch();
         console.log('confirmWindowClosedCallback');
       },
-      userConfirmCallback() {
+      userConfirmCallback: () => {
+        this._userConfirmCallbackReceived.dispatch();
         console.log('userConfirmCallback');
       },
-      getGameInventoryItems() {
+      getGameInventoryItems: () => {
+        this._getGameInventoryItemsReceived.dispatch();
         console.log('getGameInventoryItems');
       },
 
-      userProfileCallback(profile) {
+      userProfileCallback: (profile) => {
+        this._userProfileCallbackReceived.dispatch(profile);
         console.log(`userProfileCallback(${JSON.stringify(profile)})`);
       },
-      userFriendsCallback(profile) {
-        console.log(`userFriendsCallback(${JSON.stringify(profile)})`);
+      userFriendsCallback: (data) => {
+        this._userFriendsCallbackReceived.dispatch(data);
+        console.log(`userFriendsCallback(${JSON.stringify(data)})`);
       },
-      userSocialFriendsCallback(profile) {
-        console.log(`userSocialFriendsCallback(${JSON.stringify(profile)})`);
+      userSocialFriendsCallback: (data) => {
+        this._userSocialFriendsCallbackReceived.dispatch(data);
+        console.log(`userSocialFriendsCallback(${JSON.stringify(data)})`);
       }
     };
   }
@@ -221,11 +258,36 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   }
 
   public showInterstitial(callbacks?: InterstitialCallbacks): void {
-    //this._sdk.adv.showFullscreenAdv({ callbacks });
+    this._adsCallbackReceived.one((context) => {
+      if (context.type == 'adError') {
+        callbacks?.onError?.(new Error(context.code));
+      }
+
+      callbacks?.onClose?.(context.type == 'adCompleted');
+    });
+
+    callbacks?.onOpen?.();
+
+    this._sdk?.showAds({ interstitial: true });
   }
 
   public showRewarded(callbacks?: RewardedCallbacks): void {
-    //this._sdk.adv.showRewardedVideo({ callbacks });
+    this._adsCallbackReceived.one((context) => {
+      if (context.type == 'adError') {
+        callbacks?.onError?.(new Error(context.code));
+      }
+
+      if (context.type == 'adCompleted') {
+        callbacks?.onRewarded?.();
+        callbacks?.onClose?.(true);
+      } else {
+        callbacks?.onClose?.(false);
+      }
+    });
+
+    callbacks?.onOpen?.();
+
+    this._sdk?.showAds({ interstitial: false });
   }
 
   public async canReview(): Promise<boolean> {

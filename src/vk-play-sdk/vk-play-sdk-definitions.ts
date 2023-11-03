@@ -13,6 +13,8 @@ export type VKPlaySDK = {
   getAuthToken(): void;
   userInfo(): void;
 
+  showAds(config?: { sources?: 'admanSource,admanagerSource' | 'admanSource' | 'admanagerSource'; interstitial?: boolean }): void;
+
   paymentFrame(args: { merchant_param: PurchaseInformation & Record<string, any> }): void;
   paymentFrameItem(args: { ids: string; merchant_param: Record<string, any> }): void;
   paymentFrameUrl(args: { merchant_param: PurchaseInformation & Record<string, any> }): void;
