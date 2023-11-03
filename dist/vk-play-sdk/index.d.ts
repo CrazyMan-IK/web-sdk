@@ -46,6 +46,7 @@ type CallbacksContainer = {
         type: 'adError';
         code: 'UndefinedAdError' | 'AdblockDetectedAdError' | 'WaterfallConfigLoadFailed';
     }): void;
+    paymentWaitCallback(data: any): void;
     paymentReceivedCallback(data: {
         uid: number;
     }): void;
@@ -78,8 +79,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     private readonly _getAuthTokenCallbackReceived;
     private readonly _userInfoCallbackReceived;
     private readonly _adsCallbackReceived;
-    private readonly _paymentReceivedCallbackReceived;
-    private readonly _paymentWindowClosedCallbackReceived;
+    private readonly _paymentCompletedCallbackReceived;
     private readonly _confirmWindowClosedCallbackReceived;
     private readonly _userConfirmCallbackReceived;
     private readonly _getGameInventoryItemsReceived;
@@ -91,6 +91,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     private readonly _lang;
     private readonly _callbacks;
     private _sdk;
+    private _playerInfo;
     private _isAuthorized;
     constructor();
     get locale(): Locale;

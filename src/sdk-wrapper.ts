@@ -20,7 +20,7 @@ function setLocalStorageItem(key: string, value: string) {
 export type Purchase = {
   readonly productID: string;
   readonly purchaseToken: string;
-  readonly developerPayload: string;
+  readonly developerPayload?: string;
   readonly signature: string;
 };
 

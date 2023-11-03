@@ -1,7 +1,7 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, LeaderboardEntry, RewardedCallbacks } from '../sdk-wrapper';
+import SDKWrapper, { InterstitialCallbacks, Purchase, Product, LeaderboardEntries, LeaderboardEntry, RewardedCallbacks } from '../sdk-wrapper';
 import { VKPlaySDK } from './vk-play-sdk-definitions';
 
 type VKError = {
@@ -47,6 +47,7 @@ type CallbacksContainer = {
     context: { type: 'adCompleted' | 'adDismissed' } | { type: 'adError'; code: 'UndefinedAdError' | 'AdblockDetectedAdError' | 'WaterfallConfigLoadFailed' }
   ): void;
 
+  paymentWaitCallback(data: any): void;
   paymentReceivedCallback(data: { uid: number }): void;
   paymentWindowClosedCallback(): void;
   confirmWindowClosedCallback(): void;
@@ -72,8 +73,8 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   private readonly _adsCallbackReceived: SimpleEventDispatcher<
     { type: 'adCompleted' | 'adDismissed' } | { type: 'adError'; code: 'UndefinedAdError' | 'AdblockDetectedAdError' | 'WaterfallConfigLoadFailed' }
   > = new SimpleEventDispatcher();
-  private readonly _paymentReceivedCallbackReceived: SimpleEventDispatcher<{ uid: number }> = new SimpleEventDispatcher();
-  private readonly _paymentWindowClosedCallbackReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _paymentCompletedCallbackReceived: SimpleEventDispatcher<{ status: 'received'; uid: number } | { status: 'closed' }> =
+    new SimpleEventDispatcher();
   private readonly _confirmWindowClosedCallbackReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
   private readonly _userConfirmCallbackReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
   private readonly _getGameInventoryItemsReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
@@ -86,8 +87,9 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   private readonly _appID: string;
   private readonly _lang: string;
   private readonly _callbacks: CallbacksContainer;
-  private _sdk: VKPlaySDK | null = null;
 
+  private _sdk: VKPlaySDK | null = null;
+  private _playerInfo: UserInfo | null = null;
   private _isAuthorized: boolean = false;
 
   public constructor() {
@@ -108,6 +110,10 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         console.log(`getLoginStatusCallback(${JSON.stringify(status)})`);
       },
       registerUserCallback: (info) => {
+        if (info.status == 'ok') {
+          this._playerInfo = info;
+        }
+
         this._registerUserCallbackReceived.dispatch(info);
         console.log(`registerUserCallback(${JSON.stringify(info)})`);
       },
@@ -125,12 +131,15 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         console.log(`adsCallback(${JSON.stringify(context)})`);
       },
 
+      paymentWaitCallback: (data) => {
+        console.log(`paymentWaitCallback(${JSON.stringify(data)})`);
+      },
       paymentReceivedCallback: (data) => {
-        this._paymentReceivedCallbackReceived.dispatch(data);
+        this._paymentCompletedCallbackReceived.dispatch({ status: 'received', uid: data.uid });
         console.log(`paymentReceivedCallback(${JSON.stringify(data)})`);
       },
       paymentWindowClosedCallback: () => {
-        this._paymentWindowClosedCallbackReceived.dispatch();
+        this._paymentCompletedCallbackReceived.dispatch({ status: 'closed' });
         console.log('paymentWindowClosedCallback');
       },
       confirmWindowClosedCallback: () => {
@@ -244,11 +253,29 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   }
 
   public async isMe(uniqueID: string): Promise<boolean> {
-    return false;
+    if (this._playerInfo == null) {
+      return Promise.reject();
+    }
+
+    return uniqueID == this._playerInfo.uid.toString();
   }
 
   public async authorizePlayer(): Promise<void> {
-    return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      this._registerUserCallbackReceived.one((info) => {
+        if (info.status == 'error') {
+          reject(info.errmsg);
+
+          return;
+        }
+
+        this._playerInfo = info;
+
+        resolve();
+      });
+
+      this._sdk?.registerUser();
+    });
   }
 
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
@@ -347,12 +374,22 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   }
 
   public async purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase> {
-    return Promise.resolve({
-      productID: productID,
-      purchaseToken: '',
-      developerPayload: developerPayload,
-      signature: ''
-    } as Purchase);
+    return new Promise<Purchase>((resolve, reject) => {
+      this._paymentCompletedCallbackReceived.one((result) => {
+        if (result.status == 'closed') {
+          reject();
+
+          return;
+        }
+
+        resolve({
+          productID: productID,
+          purchaseToken: result.uid.toString(),
+          developerPayload: developerPayload,
+          signature: ''
+        });
+      });
+    });
   }
 
   public async consumeProduct(purchasedProductToken: string): Promise<void> {

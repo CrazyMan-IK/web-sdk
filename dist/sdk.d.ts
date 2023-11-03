@@ -29,8 +29,8 @@ export default abstract class SDK {
     static isMe(uniqueID: string): Promise<boolean>;
     static authorizePlayer(): Promise<void>;
     static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
-    static showInterstitial(callbacks: InterstitialCallbacks): Promise<void>;
-    static showRewarded(id: string, callbacks: RewardedCallbacks): Promise<void>;
+    static showInterstitial(callbacks?: InterstitialCallbacks): Promise<void>;
+    static showRewarded(id: string, callbacks?: RewardedCallbacks): Promise<void>;
     static getPurchasedProducts(): Promise<Purchase[]>;
     static getProductCatalog(): Promise<Product[]>;
     static purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase>;

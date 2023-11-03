@@ -3,6 +3,7 @@ export type PurchaseInformation = {
     item_id: string;
     description: string;
     currency: 'RUB' | 'USD' | 'EUR';
+    currency_auto_convert: boolean;
 };
 export type VKPlaySDK = {
     getLoginStatus(): void;

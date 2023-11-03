@@ -7,8 +7,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     _getAuthTokenCallbackReceived = new SimpleEventDispatcher();
     _userInfoCallbackReceived = new SimpleEventDispatcher();
     _adsCallbackReceived = new SimpleEventDispatcher();
-    _paymentReceivedCallbackReceived = new SimpleEventDispatcher();
-    _paymentWindowClosedCallbackReceived = new SimpleEventDispatcher();
+    _paymentCompletedCallbackReceived = new SimpleEventDispatcher();
     _confirmWindowClosedCallbackReceived = new SimpleEventDispatcher();
     _userConfirmCallbackReceived = new SimpleEventDispatcher();
     _getGameInventoryItemsReceived = new SimpleEventDispatcher();
@@ -20,6 +19,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     _lang;
     _callbacks;
     _sdk = null;
+    _playerInfo = null;
     _isAuthorized = false;
     constructor() {
         super();
@@ -35,6 +35,9 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                 console.log(`getLoginStatusCallback(${JSON.stringify(status)})`);
             },
             registerUserCallback: (info) => {
+                if (info.status == 'ok') {
+                    this._playerInfo = info;
+                }
                 this._registerUserCallbackReceived.dispatch(info);
                 console.log(`registerUserCallback(${JSON.stringify(info)})`);
             },
@@ -50,12 +53,15 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                 this._adsCallbackReceived.dispatch(context);
                 console.log(`adsCallback(${JSON.stringify(context)})`);
             },
+            paymentWaitCallback: (data) => {
+                console.log(`paymentWaitCallback(${JSON.stringify(data)})`);
+            },
             paymentReceivedCallback: (data) => {
-                this._paymentReceivedCallbackReceived.dispatch(data);
+                this._paymentCompletedCallbackReceived.dispatch({ status: 'received', uid: data.uid });
                 console.log(`paymentReceivedCallback(${JSON.stringify(data)})`);
             },
             paymentWindowClosedCallback: () => {
-                this._paymentWindowClosedCallbackReceived.dispatch();
+                this._paymentCompletedCallbackReceived.dispatch({ status: 'closed' });
                 console.log('paymentWindowClosedCallback');
             },
             confirmWindowClosedCallback: () => {
@@ -152,10 +158,23 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         console.log('Happy Time');
     }
     async isMe(uniqueID) {
-        return false;
+        if (this._playerInfo == null) {
+            return Promise.reject();
+        }
+        return uniqueID == this._playerInfo.uid.toString();
     }
     async authorizePlayer() {
-        return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            this._registerUserCallbackReceived.one((info) => {
+                if (info.status == 'error') {
+                    reject(info.errmsg);
+                    return;
+                }
+                this._playerInfo = info;
+                resolve();
+            });
+            this._sdk?.registerUser();
+        });
     }
     sendAnalyticsEvent(eventName, data) {
         console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
@@ -240,11 +259,19 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         return Promise.resolve([]);
     }
     async purchaseProduct(productID, developerPayload) {
-        return Promise.resolve({
-            productID: productID,
-            purchaseToken: '',
-            developerPayload: developerPayload,
-            signature: ''
+        return new Promise((resolve, reject) => {
+            this._paymentCompletedCallbackReceived.one((result) => {
+                if (result.status == 'closed') {
+                    reject();
+                    return;
+                }
+                resolve({
+                    productID: productID,
+                    purchaseToken: result.uid.toString(),
+                    developerPayload: developerPayload,
+                    signature: ''
+                });
+            });
         });
     }
     async consumeProduct(purchasedProductToken) {

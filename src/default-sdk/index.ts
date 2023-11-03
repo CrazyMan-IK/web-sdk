@@ -185,12 +185,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public async purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase> {
-    return Promise.resolve({
+    return Promise.resolve<Purchase>({
       productID: productID,
       purchaseToken: '',
       developerPayload: developerPayload,
       signature: ''
-    } as Purchase);
+    });
   }
 
   public async consumeProduct(purchasedProductToken: string): Promise<void> {

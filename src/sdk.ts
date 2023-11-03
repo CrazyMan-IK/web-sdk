@@ -190,40 +190,38 @@ export default abstract class SDK {
   }
 
   public static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
-    window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
-
-    console.log(`Analytic event sended (${eventName}) with data: ${data}`);
+    this._sdk.sendAnalyticsEvent(eventName, data);
   }
 
-  public static async showInterstitial(callbacks: InterstitialCallbacks): Promise<void> {
+  public static async showInterstitial(callbacks?: InterstitialCallbacks): Promise<void> {
     this._sdk.showInterstitial({
       onOpen: () => {
-        callbacks.onOpen?.call(undefined);
+        callbacks?.onOpen?.();
         this._adOpened.dispatch();
       },
       onClose: (wasShown) => {
-        callbacks.onClose?.call(undefined, wasShown);
+        callbacks?.onClose?.(wasShown);
         this._adClosed.dispatch();
       },
-      onError: callbacks.onError
+      onError: callbacks?.onError
     });
   }
 
-  public static async showRewarded(id: string, callbacks: RewardedCallbacks): Promise<void> {
+  public static async showRewarded(id: string, callbacks?: RewardedCallbacks): Promise<void> {
     this._sdk.showRewarded({
       onOpen: () => {
-        callbacks.onOpen?.call(undefined);
+        callbacks?.onOpen?.();
         this._adOpened.dispatch();
       },
       onRewarded: () => {
-        callbacks.onRewarded?.call(undefined);
+        callbacks?.onRewarded?.();
         this._rewardedAdReward.dispatch(id);
       },
       onClose: (wasShown) => {
-        callbacks.onClose?.call(undefined, wasShown);
+        callbacks?.onClose?.(wasShown);
         this._adClosed.dispatch();
       },
-      onError: callbacks.onError
+      onError: callbacks?.onError
     });
   }
 
