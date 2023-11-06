@@ -1,7 +1,16 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
-import { YandexGamesSDK, Player, Payments, Leaderboards } from './yandex-sdk-definitions';
+import SDKWrapper, {
+  Player,
+  DeviceInfo,
+  InterstitialCallbacks,
+  Purchase,
+  Product,
+  LeaderboardEntries,
+  RewardedCallbacks,
+  CanReviewResponse
+} from '../sdk-wrapper';
+import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
 
 declare global {
   interface Window {
@@ -16,6 +25,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
   private readonly _isDraft: boolean = false;
 
   private _player: Player | null = null;
+  private _yplayer: YPlayer | null = null;
   private _payments: Payments | null = null;
   private _leaderboards: Leaderboards | null = null;
   private _isAuthorized: boolean = false;
@@ -110,7 +120,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
       window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageLoad', { pageLoadTime: pageLoadTime / 1000 });
     });
 
-    this.getPlayer();
+    await this.getPlayer();
 
     /*const leaderboardInitializationPromise = this._sdk
       .getLeaderboards()
@@ -149,12 +159,47 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
 
   public async isMe(uniqueID: string): Promise<boolean> {
     return this.getPlayer()
-      .then((player) => player.getUniqueID() == uniqueID)
+      .then((player) => player.uuid == uniqueID)
       .catch(() => false);
   }
 
   public async authorizePlayer(): Promise<void> {
     return this._sdk.auth.openAuthDialog();
+  }
+
+  public async getPlayer(): Promise<Player> {
+    if (this._player !== null) {
+      return this._player;
+    }
+
+    return this.getPlayerInternal().then((player) => {
+      this._player = {
+        get isAuthorized() {
+          return player.getMode() !== 'lite';
+        },
+        get hasNamePermission() {
+          return player._personalInfo.scopePermissions.public_name == 'allow';
+        },
+        get hasPhotoPermission() {
+          return player._personalInfo.scopePermissions.avatar == 'allow';
+        },
+        get name() {
+          return player.getName();
+        },
+        get photo() {
+          return {
+            small: player.getPhoto('small'),
+            medium: player.getPhoto('medium'),
+            large: player.getPhoto('large')
+          };
+        },
+        get uuid() {
+          return player.getUniqueID();
+        }
+      };
+
+      return this._player;
+    });
   }
 
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
@@ -169,7 +214,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     this._sdk.adv.showRewardedVideo({ callbacks });
   }
 
-  public async canReview(): Promise<boolean> {
+  public async canReview(): Promise<CanReviewResponse> {
     return this._sdk.feedback.canReview();
   }
 
@@ -177,15 +222,15 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     return this._sdk.feedback.requestReview();
   }
 
-  public async getPlayer(): Promise<Player> {
-    if (this._player !== null) {
-      return this._player;
+  public async getPlayerInternal(): Promise<YPlayer> {
+    if (this._yplayer !== null) {
+      return this._yplayer;
     }
 
     return this._sdk.getPlayer({ scopes: false }).then((player) => {
       this._isAuthorized = player.getMode() !== 'lite';
 
-      this._player = player;
+      this._yplayer = player;
 
       return player;
     });
@@ -255,18 +300,24 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     competingPlayersCount?: IntRange<1, 11>,
     includeSelf?: boolean
   ): Promise<LeaderboardEntries> {
-    return this.getLeaderboards().then((leaderboards) => {
-      return leaderboards.getLeaderboardEntries(leaderboardName, {
+    return this.getLeaderboards().then(async (leaderboards) => {
+      const response = await leaderboards.getLeaderboardEntries(leaderboardName, {
         includeUser: includeSelf,
         quantityAround: competingPlayersCount,
         quantityTop: topPlayersCount
       });
+
+      for (const entry of response.entries) {
+        (entry.player as any).avatar = entry.player.getAvatarSrc('large');
+      }
+
+      return response as LeaderboardEntries;
     });
   }
 
   public async getPlayerData(keys: string[] | undefined = undefined): Promise<Record<string, any>> {
     //if (this._player === null) {
-    return this.getPlayer()
+    return this.getPlayerInternal()
       .then((player) => {
         return player.getData(keys);
       })
@@ -282,7 +333,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
 
   public async setPlayerData(values: Record<string, any>): Promise<void> {
     //if (this._player === null) {
-    return this.getPlayer()
+    return this.getPlayerInternal()
       .then((player) => {
         return player.setData(values);
       })

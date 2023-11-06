@@ -1,6 +1,13 @@
 import { IntRange } from '../global';
 
 export type Player = {
+  readonly _personalInfo: {
+    readonly scopePermissions: {
+      readonly avatar: 'not_set' | 'forbid' | 'allow';
+      readonly public_name: 'not_set' | 'forbid' | 'allow';
+    };
+  };
+
   getMode(): 'lite' | '';
 
   setData(data: Record<string, any>, flush?: boolean): Promise<void>;
@@ -136,7 +143,9 @@ export type YandexGamesSDK = {
   };
 
   readonly feedback: {
-    canReview(): Promise<boolean>;
+    canReview(): Promise<
+      { value: true } | { value: false; reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN' }
+    >;
     requestReview(): Promise<{ feedbackSent: boolean }>;
   };
 

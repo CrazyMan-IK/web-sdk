@@ -1,6 +1,16 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, LeaderboardEntry, RewardedCallbacks } from '../sdk-wrapper';
+import SDKWrapper, {
+  Player,
+  DeviceInfo,
+  InterstitialCallbacks,
+  Purchase,
+  Product,
+  LeaderboardEntries,
+  LeaderboardEntry,
+  RewardedCallbacks,
+  CanReviewResponse
+} from '../sdk-wrapper';
 
 export default class DefaultSDKWrapper extends SDKWrapper {
   public static readonly UniquePlayerID: string = 'UniquePlayerID';
@@ -118,6 +128,8 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         throw new Error('Billing failed to initialize.');
       });*/
 
+    await this.getPlayer();
+
     return Promise.resolve();
   }
 
@@ -147,6 +159,36 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     return Promise.resolve();
   }
 
+  public async getPlayer(): Promise<Player> {
+    const isAuthorized = this._isAuthorized;
+    const player: Player = {
+      get isAuthorized() {
+        return isAuthorized;
+      },
+      get hasNamePermission() {
+        return this.isAuthorized;
+      },
+      get hasPhotoPermission() {
+        return this.isAuthorized;
+      },
+      get name() {
+        return 'ABOBUS';
+      },
+      get photo() {
+        return {
+          small: 'https://i.pravatar.cc/256',
+          medium: 'https://i.pravatar.cc/256',
+          large: 'https://i.pravatar.cc/256'
+        };
+      },
+      get uuid() {
+        return DefaultSDKWrapper.UniquePlayerID;
+      }
+    };
+
+    return Promise.resolve(player);
+  }
+
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any> | undefined): void {
     console.log(`Analytic event sended (${eventName}) with data: ${data}`);
   }
@@ -166,8 +208,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     console.log('Rewarded Showed');
   }
 
-  public async canReview(): Promise<boolean> {
-    return Promise.resolve(Math.round(Math.random()) != 0);
+  public async canReview(): Promise<CanReviewResponse> {
+    const value = Math.round(Math.random()) != 0;
+    const result: CanReviewResponse = value ? { value } : { value, reason: 'UNKNOWN' };
+
+    return Promise.resolve(result);
   }
 
   public async requestReview(): Promise<{ feedbackSent: boolean }> {
@@ -257,6 +302,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
             public_name: 'allow'
           },
 
+          avatar: 'https://i.pravatar.cc/256',
           uniqueID: i == me ? DefaultSDKWrapper.UniquePlayerID : '',
 
           getAvatarSrc(size: 'small' | 'medium' | 'large'): string {

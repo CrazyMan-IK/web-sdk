@@ -1,9 +1,17 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { IntRange } from './global';
 import Localization from './localization';
-import SDKWrapper, { Purchase, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks } from './sdk-wrapper';
+import SDKWrapper, {
+  Player,
+  Purchase,
+  Product,
+  LeaderboardEntries,
+  DeviceInfo,
+  InterstitialCallbacks,
+  RewardedCallbacks,
+  CanReviewResponse
+} from './sdk-wrapper';
 import { YandexGamesSDK } from './yandex-sdk/yandex-sdk-definitions';
-import { VKPlaySDK } from './vk-play-sdk/vk-play-sdk-definitions';
 
 const STATIC_INIT = Symbol();
 
@@ -22,7 +30,7 @@ export default abstract class SDK {
   private static _isInitialized: boolean = false;
   private static _isGettingData: boolean = false;
 
-  private static _gettings: Map<[string[], Record<number, any>], (value: any[]) => void> = new Map();
+  private static _gettings: Map<[string[], Record<number, any>] | null, (value: any[]) => void> = new Map();
 
   private static readonly _settingDataCooldown: number = 2;
   /*private _startDelay: number = 0.25;
@@ -189,6 +197,10 @@ export default abstract class SDK {
     return this._sdk.authorizePlayer();
   }
 
+  public static async getPlayer(): Promise<Player> {
+    return this._sdk.getPlayer();
+  }
+
   public static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
     this._sdk.sendAnalyticsEvent(eventName, data);
   }
@@ -225,6 +237,14 @@ export default abstract class SDK {
     });
   }
 
+  public static async canReview(): Promise<CanReviewResponse> {
+    return this._sdk.canReview();
+  }
+
+  public static async requestReview(): Promise<{ feedbackSent: boolean }> {
+    return this._sdk.requestReview();
+  }
+
   public static async getPurchasedProducts(): Promise<Purchase[]> {
     return this._sdk.getPurchasedProducts();
   }
@@ -252,6 +272,28 @@ export default abstract class SDK {
     includeSelf?: boolean
   ): Promise<LeaderboardEntries> {
     return this._sdk.getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf);
+  }
+
+  public static async getAllValues(): Promise<Record<string, any>> {
+    if (!this.isInitialized) {
+      return new Promise((resolve) => {
+        this._gettings.set(null, resolve);
+      });
+    }
+
+    if (this._prefs) {
+      return this._prefs;
+    }
+
+    return this.getPlayerData()
+      .then((data) => {
+        return data;
+      })
+      .catch(() => {
+        return new Promise((resolve) => {
+          this._gettings.set(null, resolve);
+        });
+      });
   }
 
   public static async getValues<T extends ([] | string[]) & (number extends T['length'] ? readonly string[] : unknown)>(
@@ -293,7 +335,7 @@ export default abstract class SDK {
       });
   }
 
-  public static async setValues(values: Record<string, any>): Promise<void> {
+  public static async setAllValues(values: Record<string, any>): Promise<void> {
     if (!this.isInitialized) {
       return;
     }
@@ -313,6 +355,12 @@ export default abstract class SDK {
     for (const key in values) {
       this._prefs[key] = values[key];
     }
+
+    this.setPlayerData(this._prefs);
+  }
+
+  public static async setValues(values: Record<string, any>): Promise<void> {
+    this._prefs = values;
 
     this.setPlayerData(this._prefs);
   }
@@ -435,6 +483,12 @@ export default abstract class SDK {
     //}
 
     gettings.forEach((value, values) => {
+      if (values == null) {
+        value(this._prefs as any);
+
+        return;
+      }
+
       const result: any[] = [];
 
       for (let i = 0; i < values[0].length; i++) {

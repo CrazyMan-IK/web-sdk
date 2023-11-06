@@ -1,7 +1,16 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { InterstitialCallbacks, Purchase, Product, LeaderboardEntries, LeaderboardEntry, RewardedCallbacks } from '../sdk-wrapper';
+import SDKWrapper, {
+  Player,
+  InterstitialCallbacks,
+  Purchase,
+  Product,
+  LeaderboardEntries,
+  LeaderboardEntry,
+  RewardedCallbacks,
+  CanReviewResponse
+} from '../sdk-wrapper';
 import { VKPlaySDK } from './vk-play-sdk-definitions';
 
 type VKError = {
@@ -88,6 +97,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   private readonly _lang: string;
   private readonly _callbacks: CallbacksContainer;
 
+  private _player: Player | null = null;
   private _sdk: VKPlaySDK | null = null;
   private _playerInfo: UserInfo | null = null;
   private _isAuthorized: boolean = false;
@@ -230,8 +240,10 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
       script.addEventListener('load', () => {
         window
           .iframeApi(this._callbacks, { debug: this._isDraft })
-          .then((sdk: VKPlaySDK) => {
+          .then(async (sdk: VKPlaySDK) => {
             this._sdk = sdk;
+
+            await this.getPlayer();
 
             resolve();
           })
@@ -285,6 +297,92 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     });
   }
 
+  public async getPlayer(): Promise<Player> {
+    if (this._player !== null) {
+      return this._player;
+    }
+
+    return new Promise((resolve, reject) => {
+      this._getLoginStatusCallbackReceived.one((loginStatus) => {
+        if (loginStatus.status == 'error') {
+          reject(loginStatus.errmsg);
+
+          return;
+        }
+
+        if (loginStatus.loginStatus > 1) {
+          this._userProfileCallbackReceived.one((userProfile) => {
+            if (userProfile.status == 'error') {
+              reject(userProfile.errmsg);
+
+              return;
+            }
+
+            this._player = {
+              get isAuthorized() {
+                return true;
+              },
+              get hasNamePermission() {
+                return true;
+              },
+              get hasPhotoPermission() {
+                return true;
+              },
+              get name() {
+                return userProfile.nick;
+              },
+              get photo() {
+                return {
+                  small: userProfile.avatar,
+                  medium: userProfile.avatar,
+                  large: userProfile.avatar
+                };
+              },
+              get uuid() {
+                return userProfile.slug;
+              }
+            };
+
+            resolve(this._player);
+          });
+
+          this._sdk?.userProfile();
+
+          return;
+        }
+
+        this._player = {
+          get isAuthorized() {
+            return false;
+          },
+          get hasNamePermission() {
+            return false;
+          },
+          get hasPhotoPermission() {
+            return false;
+          },
+          get name() {
+            return '';
+          },
+          get photo() {
+            return {
+              small: '',
+              medium: '',
+              large: ''
+            };
+          },
+          get uuid() {
+            return '';
+          }
+        };
+
+        resolve(this._player);
+      });
+
+      this._sdk?.getLoginStatus();
+    });
+  }
+
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
     console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
   }
@@ -322,8 +420,8 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     this._sdk?.showAds({ interstitial: false });
   }
 
-  public async canReview(): Promise<boolean> {
-    return Promise.resolve(false);
+  public async canReview(): Promise<CanReviewResponse> {
+    return Promise.resolve({ value: false, reason: 'UNKNOWN' });
   }
 
   public async requestReview(): Promise<{ feedbackSent: boolean }> {
@@ -462,6 +560,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
             public_name: 'allow'
           },
 
+          avatar: 'https://i.pravatar.cc/256',
           uniqueID: '',
 
           getAvatarSrc(size: 'small' | 'medium' | 'large'): string {

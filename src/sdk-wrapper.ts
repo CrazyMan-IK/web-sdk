@@ -17,6 +17,15 @@ function setLocalStorageItem(key: string, value: string) {
   }
 }
 
+export type Player = {
+  get isAuthorized(): boolean;
+  get hasNamePermission(): boolean;
+  get hasPhotoPermission(): boolean;
+  get name(): string;
+  get photo(): { [key in 'small' | 'medium' | 'large']: string };
+  get uuid(): string;
+};
+
 export type Purchase = {
   readonly productID: string;
   readonly purchaseToken: string;
@@ -68,6 +77,7 @@ export type LeaderboardEntry = {
       readonly public_name: string;
     };
 
+    readonly avatar: string;
     readonly uniqueID: string;
 
     getAvatarSrc(size: 'small' | 'medium' | 'large'): string;
@@ -105,6 +115,10 @@ export type RewardedCallbacks = {
   onRewarded?: () => void;
 } & InterstitialCallbacks;
 
+export type CanReviewResponse =
+  | { value: true }
+  | { value: false; reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN' };
+
 export default abstract class SDKWrapper {
   public abstract get locale(): Locale;
   public abstract get lang(): string;
@@ -131,13 +145,14 @@ export default abstract class SDKWrapper {
 
   public abstract isMe(uniqueID: string): Promise<boolean>;
   public abstract authorizePlayer(): Promise<void>;
+  public abstract getPlayer(): Promise<Player>;
 
   public abstract sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
 
   public abstract showInterstitial(callbacks?: InterstitialCallbacks): void;
   public abstract showRewarded(callbacks?: RewardedCallbacks): void;
 
-  public abstract canReview(): Promise<boolean>;
+  public abstract canReview(): Promise<CanReviewResponse>;
   public abstract requestReview(): Promise<{ feedbackSent: boolean }>;
 
   public abstract getPurchasedProducts(): Promise<Purchase[]>;
