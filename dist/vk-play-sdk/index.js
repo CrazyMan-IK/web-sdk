@@ -36,6 +36,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
             },
             registerUserCallback: (info) => {
                 if (info.status == 'ok') {
+                    this._isAuthorized = true;
                     this._playerInfo = info;
                 }
                 this._registerUserCallbackReceived.dispatch(info);
@@ -46,6 +47,10 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                 console.log(`getAuthTokenCallback(${JSON.stringify(token)})`);
             },
             userInfoCallback: (info) => {
+                if (info.status == 'ok') {
+                    this._isAuthorized = true;
+                    this._playerInfo = info;
+                }
                 this._userInfoCallbackReceived.dispatch(info);
                 console.log(`userInfoCallback(${JSON.stringify(info)})`);
             },
@@ -170,7 +175,8 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     reject(info.errmsg);
                     return;
                 }
-                this._playerInfo = info;
+                /* this._isAuthorized = true;
+                this._playerInfo = info; */
                 resolve();
             });
             this._sdk?.registerUser();

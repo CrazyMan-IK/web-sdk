@@ -56,7 +56,6 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         return this._isDraft;
     }
     async initialize() {
-        window.yandexMetricaCounterId = 0;
         (function (m, e, t, r, i, k, a) {
             m[i] =
                 m[i] ||
