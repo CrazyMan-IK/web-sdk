@@ -1,6 +1,6 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
+import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
     static readonly UniquePlayerID: string;
     private readonly _lang;
@@ -20,10 +20,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     happyTime(): void;
     isMe(uniqueID: string): Promise<boolean>;
     authorizePlayer(): Promise<void>;
+    getPlayer(): Promise<Player>;
     sendAnalyticsEvent(eventName: string, data?: Record<string, any> | undefined): void;
     showInterstitial(callbacks?: InterstitialCallbacks): void;
     showRewarded(callbacks?: RewardedCallbacks): void;
-    canReview(): Promise<boolean>;
+    canReview(): Promise<CanReviewResponse>;
     requestReview(): Promise<{
         feedbackSent: boolean;
     }>;

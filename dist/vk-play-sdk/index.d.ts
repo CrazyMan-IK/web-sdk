@@ -1,6 +1,6 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
+import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
 import { VKPlaySDK } from './vk-play-sdk-definitions';
 type VKError = {
     status: 'error';
@@ -90,6 +90,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     private readonly _appID;
     private readonly _lang;
     private readonly _callbacks;
+    private _player;
     private _sdk;
     private _playerInfo;
     private _isAuthorized;
@@ -107,10 +108,11 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     happyTime(): void;
     isMe(uniqueID: string): Promise<boolean>;
     authorizePlayer(): Promise<void>;
+    getPlayer(): Promise<Player>;
     sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     showInterstitial(callbacks?: InterstitialCallbacks): void;
     showRewarded(callbacks?: RewardedCallbacks): void;
-    canReview(): Promise<boolean>;
+    canReview(): Promise<CanReviewResponse>;
     requestReview(): Promise<{
         feedbackSent: boolean;
     }>;

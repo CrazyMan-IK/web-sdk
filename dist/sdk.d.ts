@@ -1,5 +1,5 @@
 import { IntRange } from './global';
-import SDKWrapper, { Purchase, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks } from './sdk-wrapper';
+import SDKWrapper, { Player, Purchase, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks, CanReviewResponse } from './sdk-wrapper';
 declare const STATIC_INIT: unique symbol;
 export default abstract class SDK {
     private static readonly _adOpened;
@@ -28,20 +28,27 @@ export default abstract class SDK {
     static waitInitialization(): Promise<void>;
     static isMe(uniqueID: string): Promise<boolean>;
     static authorizePlayer(): Promise<void>;
+    static getPlayer(): Promise<Player>;
     static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     static showInterstitial(callbacks?: InterstitialCallbacks): Promise<void>;
     static showRewarded(id: string, callbacks?: RewardedCallbacks): Promise<void>;
+    static canReview(): Promise<CanReviewResponse>;
+    static requestReview(): Promise<{
+        feedbackSent: boolean;
+    }>;
     static getPurchasedProducts(): Promise<Purchase[]>;
     static getProductCatalog(): Promise<Product[]>;
     static purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase>;
     static consumeProduct(purchasedProductToken: string): Promise<void>;
     static setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     static getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
+    static getAllValues(): Promise<Record<string, any>>;
     static getValues<T extends ([] | string[]) & (number extends T['length'] ? readonly string[] : unknown)>(keys: T, defaultValues: {
         [K in keyof T]: any;
     }): Promise<{
         [K in keyof T]: any;
     }>;
+    static setAllValues(values: Record<string, any>): Promise<void>;
     static setValues(values: Record<string, any>): Promise<void>;
     static removeKeys(keys: string[]): Promise<void>;
     static removeKeyByPredicate(predicate: (key: string) => boolean): Promise<void>;

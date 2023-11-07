@@ -1,5 +1,15 @@
 import { IntRange } from './global';
 import { Locale } from './localization';
+export type Player = {
+    get isAuthorized(): boolean;
+    get hasNamePermission(): boolean;
+    get hasPhotoPermission(): boolean;
+    get name(): string;
+    get photo(): {
+        [key in 'small' | 'medium' | 'large']: string;
+    };
+    get uuid(): string;
+};
 export type Purchase = {
     readonly productID: string;
     readonly purchaseToken: string;
@@ -40,6 +50,7 @@ export type LeaderboardEntry = {
             readonly avatar: string;
             readonly public_name: string;
         };
+        readonly avatar: string;
         readonly uniqueID: string;
         getAvatarSrc(size: 'small' | 'medium' | 'large'): string;
         getAvatarSrcSet(size: 'small' | 'medium' | 'large'): string;
@@ -70,6 +81,12 @@ export type InterstitialCallbacks = {
 export type RewardedCallbacks = {
     onRewarded?: () => void;
 } & InterstitialCallbacks;
+export type CanReviewResponse = {
+    value: true;
+} | {
+    value: false;
+    reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN';
+};
 export default abstract class SDKWrapper {
     abstract get locale(): Locale;
     abstract get lang(): string;
@@ -84,10 +101,11 @@ export default abstract class SDKWrapper {
     abstract happyTime(): void;
     abstract isMe(uniqueID: string): Promise<boolean>;
     abstract authorizePlayer(): Promise<void>;
+    abstract getPlayer(): Promise<Player>;
     abstract sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     abstract showInterstitial(callbacks?: InterstitialCallbacks): void;
     abstract showRewarded(callbacks?: RewardedCallbacks): void;
-    abstract canReview(): Promise<boolean>;
+    abstract canReview(): Promise<CanReviewResponse>;
     abstract requestReview(): Promise<{
         feedbackSent: boolean;
     }>;

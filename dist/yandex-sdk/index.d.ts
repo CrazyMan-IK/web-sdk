@@ -1,7 +1,7 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks } from '../sdk-wrapper';
-import { YandexGamesSDK, Player, Payments, Leaderboards } from './yandex-sdk-definitions';
+import SDKWrapper, { Player, DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
+import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
 declare global {
     interface Window {
         ym(counterId: number, arg: string, data?: Record<string, any>): void;
@@ -13,6 +13,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     private readonly _sdk;
     private readonly _isDraft;
     private _player;
+    private _yplayer;
     private _payments;
     private _leaderboards;
     private _isAuthorized;
@@ -44,14 +45,15 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     happyTime(): void;
     isMe(uniqueID: string): Promise<boolean>;
     authorizePlayer(): Promise<void>;
+    getPlayer(): Promise<Player>;
     sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
     showInterstitial(callbacks?: InterstitialCallbacks): void;
     showRewarded(callbacks?: RewardedCallbacks): void;
-    canReview(): Promise<boolean>;
+    canReview(): Promise<CanReviewResponse>;
     requestReview(): Promise<{
         feedbackSent: boolean;
     }>;
-    getPlayer(): Promise<Player>;
+    getPlayerInternal(): Promise<YPlayer>;
     getPayments(): Promise<Payments>;
     getLeaderboards(): Promise<Leaderboards>;
     getPurchasedProducts(): Promise<Purchase[]>;

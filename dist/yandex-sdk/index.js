@@ -4,6 +4,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     _sdk;
     _isDraft = false;
     _player = null;
+    _yplayer = null;
     _payments = null;
     _leaderboards = null;
     _isAuthorized = false;
@@ -81,7 +82,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             const pageLoadTime = navigationTiming.domContentLoadedEventStart - navigationTiming.startTime; // performance.timing.domContentLoadedEventStart - performance.timing.navigationStart;
             window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageLoad', { pageLoadTime: pageLoadTime / 1000 });
         });
-        this.getPlayer();
+        await this.getPlayer();
         /*const leaderboardInitializationPromise = this._sdk
           .getLeaderboards()
           .then(function (leaderboard) {
@@ -114,11 +115,43 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     }
     async isMe(uniqueID) {
         return this.getPlayer()
-            .then((player) => player.getUniqueID() == uniqueID)
+            .then((player) => player.uuid == uniqueID)
             .catch(() => false);
     }
     async authorizePlayer() {
         return this._sdk.auth.openAuthDialog();
+    }
+    async getPlayer() {
+        if (this._player !== null) {
+            return this._player;
+        }
+        return this.getPlayerInternal().then((player) => {
+            this._player = {
+                get isAuthorized() {
+                    return player.getMode() !== 'lite';
+                },
+                get hasNamePermission() {
+                    return player._personalInfo.scopePermissions.public_name == 'allow';
+                },
+                get hasPhotoPermission() {
+                    return player._personalInfo.scopePermissions.avatar == 'allow';
+                },
+                get name() {
+                    return player.getName();
+                },
+                get photo() {
+                    return {
+                        small: player.getPhoto('small'),
+                        medium: player.getPhoto('medium'),
+                        large: player.getPhoto('large')
+                    };
+                },
+                get uuid() {
+                    return player.getUniqueID();
+                }
+            };
+            return this._player;
+        });
     }
     sendAnalyticsEvent(eventName, data) {
         window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
@@ -135,13 +168,13 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     async requestReview() {
         return this._sdk.feedback.requestReview();
     }
-    async getPlayer() {
-        if (this._player !== null) {
-            return this._player;
+    async getPlayerInternal() {
+        if (this._yplayer !== null) {
+            return this._yplayer;
         }
         return this._sdk.getPlayer({ scopes: false }).then((player) => {
             this._isAuthorized = player.getMode() !== 'lite';
-            this._player = player;
+            this._yplayer = player;
             return player;
         });
     }
@@ -192,17 +225,21 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         });
     }
     async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {
-        return this.getLeaderboards().then((leaderboards) => {
-            return leaderboards.getLeaderboardEntries(leaderboardName, {
+        return this.getLeaderboards().then(async (leaderboards) => {
+            const response = await leaderboards.getLeaderboardEntries(leaderboardName, {
                 includeUser: includeSelf,
                 quantityAround: competingPlayersCount,
                 quantityTop: topPlayersCount
             });
+            for (const entry of response.entries) {
+                entry.player.avatar = entry.player.getAvatarSrc('large');
+            }
+            return response;
         });
     }
     async getPlayerData(keys = undefined) {
         //if (this._player === null) {
-        return this.getPlayer()
+        return this.getPlayerInternal()
             .then((player) => {
             return player.getData(keys);
         })
@@ -216,7 +253,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     }
     async setPlayerData(values) {
         //if (this._player === null) {
-        return this.getPlayer()
+        return this.getPlayerInternal()
             .then((player) => {
             return player.setData(values);
         })

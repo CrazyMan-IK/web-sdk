@@ -18,6 +18,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     _appID;
     _lang;
     _callbacks;
+    _player = null;
     _sdk = null;
     _playerInfo = null;
     _isAuthorized = false;
@@ -140,8 +141,9 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
             script.addEventListener('load', () => {
                 window
                     .iframeApi(this._callbacks, { debug: this._isDraft })
-                    .then((sdk) => {
+                    .then(async (sdk) => {
                     this._sdk = sdk;
+                    await this.getPlayer();
                     resolve();
                 })
                     .catch((err) => {
@@ -182,6 +184,80 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
             this._sdk?.registerUser();
         });
     }
+    async getPlayer() {
+        if (this._player !== null) {
+            return this._player;
+        }
+        return new Promise((resolve, reject) => {
+            this._getLoginStatusCallbackReceived.one((loginStatus) => {
+                if (loginStatus.status == 'error') {
+                    reject(loginStatus.errmsg);
+                    return;
+                }
+                if (loginStatus.loginStatus > 1) {
+                    this._userProfileCallbackReceived.one((userProfile) => {
+                        if (userProfile.status == 'error') {
+                            reject(userProfile.errmsg);
+                            return;
+                        }
+                        this._player = {
+                            get isAuthorized() {
+                                return true;
+                            },
+                            get hasNamePermission() {
+                                return true;
+                            },
+                            get hasPhotoPermission() {
+                                return true;
+                            },
+                            get name() {
+                                return userProfile.nick;
+                            },
+                            get photo() {
+                                return {
+                                    small: userProfile.avatar,
+                                    medium: userProfile.avatar,
+                                    large: userProfile.avatar
+                                };
+                            },
+                            get uuid() {
+                                return userProfile.slug;
+                            }
+                        };
+                        resolve(this._player);
+                    });
+                    this._sdk?.userProfile();
+                    return;
+                }
+                this._player = {
+                    get isAuthorized() {
+                        return false;
+                    },
+                    get hasNamePermission() {
+                        return false;
+                    },
+                    get hasPhotoPermission() {
+                        return false;
+                    },
+                    get name() {
+                        return '';
+                    },
+                    get photo() {
+                        return {
+                            small: '',
+                            medium: '',
+                            large: ''
+                        };
+                    },
+                    get uuid() {
+                        return '';
+                    }
+                };
+                resolve(this._player);
+            });
+            this._sdk?.getLoginStatus();
+        });
+    }
     sendAnalyticsEvent(eventName, data) {
         console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
     }
@@ -212,7 +288,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         this._sdk?.showAds({ interstitial: false });
     }
     async canReview() {
-        return Promise.resolve(false);
+        return Promise.resolve({ value: false, reason: 'UNKNOWN' });
     }
     async requestReview() {
         return Promise.reject();
@@ -325,6 +401,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                         avatar: 'allow',
                         public_name: 'allow'
                     },
+                    avatar: 'https://i.pravatar.cc/256',
                     uniqueID: '',
                     getAvatarSrc(size) {
                         return 'https://i.pravatar.cc/256';

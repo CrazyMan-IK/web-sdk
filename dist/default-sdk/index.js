@@ -101,6 +101,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
           .catch(function () {
             throw new Error('Billing failed to initialize.');
           });*/
+        await this.getPlayer();
         return Promise.resolve();
     }
     ready() {
@@ -122,6 +123,34 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         this._isAuthorized = true;
         return Promise.resolve();
     }
+    async getPlayer() {
+        const isAuthorized = this._isAuthorized;
+        const player = {
+            get isAuthorized() {
+                return isAuthorized;
+            },
+            get hasNamePermission() {
+                return this.isAuthorized;
+            },
+            get hasPhotoPermission() {
+                return this.isAuthorized;
+            },
+            get name() {
+                return 'ABOBUS';
+            },
+            get photo() {
+                return {
+                    small: 'https://i.pravatar.cc/256',
+                    medium: 'https://i.pravatar.cc/256',
+                    large: 'https://i.pravatar.cc/256'
+                };
+            },
+            get uuid() {
+                return DefaultSDKWrapper.UniquePlayerID;
+            }
+        };
+        return Promise.resolve(player);
+    }
     sendAnalyticsEvent(eventName, data) {
         console.log(`Analytic event sended (${eventName}) with data: ${data}`);
     }
@@ -137,7 +166,9 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         console.log('Rewarded Showed');
     }
     async canReview() {
-        return Promise.resolve(Math.round(Math.random()) != 0);
+        const value = Math.round(Math.random()) != 0;
+        const result = value ? { value } : { value, reason: 'UNKNOWN' };
+        return Promise.resolve(result);
     }
     async requestReview() {
         console.log('Review requested');
@@ -203,6 +234,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
                         avatar: 'allow',
                         public_name: 'allow'
                     },
+                    avatar: 'https://i.pravatar.cc/256',
                     uniqueID: i == me ? DefaultSDKWrapper.UniquePlayerID : '',
                     getAvatarSrc(size) {
                         return 'https://i.pravatar.cc/256';

@@ -142,6 +142,9 @@ export default class SDK {
     static async authorizePlayer() {
         return this._sdk.authorizePlayer();
     }
+    static async getPlayer() {
+        return this._sdk.getPlayer();
+    }
     static sendAnalyticsEvent(eventName, data) {
         this._sdk.sendAnalyticsEvent(eventName, data);
     }
@@ -175,6 +178,12 @@ export default class SDK {
             onError: callbacks?.onError
         });
     }
+    static async canReview() {
+        return this._sdk.canReview();
+    }
+    static async requestReview() {
+        return this._sdk.requestReview();
+    }
     static async getPurchasedProducts() {
         return this._sdk.getPurchasedProducts();
     }
@@ -192,6 +201,25 @@ export default class SDK {
     }
     static async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {
         return this._sdk.getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf);
+    }
+    static async getAllValues() {
+        if (!this.isInitialized) {
+            return new Promise((resolve) => {
+                this._gettings.set(null, resolve);
+            });
+        }
+        if (this._prefs) {
+            return this._prefs;
+        }
+        return this.getPlayerData()
+            .then((data) => {
+            return data;
+        })
+            .catch(() => {
+            return new Promise((resolve) => {
+                this._gettings.set(null, resolve);
+            });
+        });
     }
     static async getValues(keys, defaultValues) {
         if (!this.isInitialized) {
@@ -222,7 +250,7 @@ export default class SDK {
             });
         });
     }
-    static async setValues(values) {
+    static async setAllValues(values) {
         if (!this.isInitialized) {
             return;
         }
@@ -238,6 +266,10 @@ export default class SDK {
         for (const key in values) {
             this._prefs[key] = values[key];
         }
+        this.setPlayerData(this._prefs);
+    }
+    static async setValues(values) {
+        this._prefs = values;
         this.setPlayerData(this._prefs);
     }
     static async removeKeys(keys) {
@@ -335,6 +367,10 @@ export default class SDK {
         //gettings.get(key)?.call(undefined);
         //}
         gettings.forEach((value, values) => {
+            if (values == null) {
+                value(this._prefs);
+                return;
+            }
             const result = [];
             for (let i = 0; i < values[0].length; i++) {
                 const key = values[0][i];
