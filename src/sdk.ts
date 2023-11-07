@@ -29,6 +29,7 @@ export default abstract class SDK {
   private static _nextData?: Record<string, any> = undefined;
   private static _isInitialized: boolean = false;
   private static _isGettingData: boolean = false;
+  private static _isAdOpened: boolean = false;
 
   private static _gettings: Map<[string[], Record<number, any>] | null, (value: any[]) => void> = new Map();
 
@@ -72,6 +73,10 @@ export default abstract class SDK {
     Localization.locale = sdk.locale;
 
     await this.getPlayerData();
+
+    if ((window as any).showAdOnLoading && this._prefs?.ADS_DISABLED) {
+      this.showInterstitial();
+    }
 
     window.addEventListener('beforeunload', () => {
       if (!this._prefs) {
@@ -171,6 +176,10 @@ export default abstract class SDK {
     return this._isInitialized;
   }
 
+  public static get isAdOpened(): boolean {
+    return this._isAdOpened;
+  }
+
   public static async waitInitialization(): Promise<void> {
     const promise = new Promise<void>((resolve) => {
       const loop = () => {
@@ -208,10 +217,14 @@ export default abstract class SDK {
   public static async showInterstitial(callbacks?: InterstitialCallbacks): Promise<void> {
     this._sdk.showInterstitial({
       onOpen: () => {
+        this._isAdOpened = true;
+
         callbacks?.onOpen?.();
         this._adOpened.dispatch();
       },
       onClose: (wasShown) => {
+        this._isAdOpened = false;
+
         callbacks?.onClose?.(wasShown);
         this._adClosed.dispatch();
       },
@@ -222,6 +235,8 @@ export default abstract class SDK {
   public static async showRewarded(id: string, callbacks?: RewardedCallbacks): Promise<void> {
     this._sdk.showRewarded({
       onOpen: () => {
+        this._isAdOpened = true;
+
         callbacks?.onOpen?.();
         this._adOpened.dispatch();
       },
@@ -230,6 +245,8 @@ export default abstract class SDK {
         this._rewardedAdReward.dispatch(id);
       },
       onClose: (wasShown) => {
+        this._isAdOpened = false;
+
         callbacks?.onClose?.(wasShown);
         this._adClosed.dispatch();
       },
