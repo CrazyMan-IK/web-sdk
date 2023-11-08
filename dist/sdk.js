@@ -156,6 +156,9 @@ export default class SDK {
         this._sdk.sendAnalyticsEvent(eventName, data);
     }
     static async showInterstitial(callbacks) {
+        if (this._isAdOpened) {
+            return;
+        }
         this._sdk.showInterstitial({
             onOpen: () => {
                 this._isAdOpened = true;
@@ -171,6 +174,9 @@ export default class SDK {
         });
     }
     static async showRewarded(id, callbacks) {
+        if (this._isAdOpened) {
+            return;
+        }
         this._sdk.showRewarded({
             onOpen: () => {
                 this._isAdOpened = true;

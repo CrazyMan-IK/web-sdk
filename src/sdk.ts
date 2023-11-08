@@ -216,6 +216,10 @@ export default abstract class SDK {
   }
 
   public static async showInterstitial(callbacks?: InterstitialCallbacks): Promise<void> {
+    if (this._isAdOpened) {
+      return;
+    }
+
     this._sdk.showInterstitial({
       onOpen: () => {
         this._isAdOpened = true;
@@ -234,6 +238,10 @@ export default abstract class SDK {
   }
 
   public static async showRewarded(id: string, callbacks?: RewardedCallbacks): Promise<void> {
+    if (this._isAdOpened) {
+      return;
+    }
+
     this._sdk.showRewarded({
       onOpen: () => {
         this._isAdOpened = true;
