@@ -396,7 +396,10 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         callbacks?.onError?.(new Error(context.code));
       }
 
-      callbacks?.onClose?.(context.type == 'adCompleted');
+      const isAdShowed = context.type == 'adCompleted';
+      setTimeout(() => {
+        callbacks?.onClose?.(isAdShowed);
+      }, 1000);
     });
 
     callbacks?.onOpen?.();
@@ -410,12 +413,16 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         callbacks?.onError?.(new Error(context.code));
       }
 
+      let isAdShowed = false;
       if (context.type == 'adCompleted') {
         callbacks?.onRewarded?.();
-        callbacks?.onClose?.(true);
-      } else {
-        callbacks?.onClose?.(false);
+
+        isAdShowed = true;
       }
+
+      setTimeout(() => {
+        callbacks?.onClose?.(isAdShowed);
+      }, 1000);
     });
 
     callbacks?.onOpen?.();
