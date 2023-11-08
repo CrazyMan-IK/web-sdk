@@ -533,7 +533,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
           break;
       }
 
-      if (!meta) {
+      if (!meta?.description) {
         meta = product.meta.en;
       }
 
