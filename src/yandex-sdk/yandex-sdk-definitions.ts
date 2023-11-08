@@ -60,7 +60,7 @@ export type LeaderboardDescription = {
       };
     };
 
-    readonly type: string;
+    readonly type: 'numeric' | 'time';
   };
 
   readonly name: string;

@@ -6,6 +6,7 @@ import SDKWrapper, {
   InterstitialCallbacks,
   Purchase,
   Product,
+  LeaderboardEntry,
   LeaderboardEntries,
   RewardedCallbacks,
   CanReviewResponse
@@ -271,8 +272,24 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
   }
 
   public async getProductCatalog(): Promise<Product[]> {
-    return this.getPayments().then((payments) => {
-      return payments.getCatalog();
+    return this.getPayments().then(async (payments) => {
+      const catalog = await payments.getCatalog();
+
+      const result = catalog.map<Product>((x) => ({
+        id: x.id,
+        imageURI: x.imageURI,
+        meta: {
+          [this.locale]: {
+            name: x.title,
+            description: x.description
+          }
+        },
+        prices: {
+          YAN: parseFloat(x.priceValue)
+        }
+      }));
+
+      return result;
     });
   }
 
@@ -307,11 +324,18 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         quantityTop: topPlayersCount
       });
 
-      for (const entry of response.entries) {
-        (entry.player as any).avatar = entry.player.getAvatarSrc('large');
-      }
+      const result: LeaderboardEntries = {
+        ...response,
+        entries: response.entries.map<LeaderboardEntry>((entry) => ({
+          ...entry,
+          player: {
+            ...entry.player,
+            avatar: entry.player.getAvatarSrc('large')
+          }
+        }))
+      };
 
-      return response as LeaderboardEntries;
+      return result;
     });
   }
 

@@ -54,7 +54,7 @@ export type LeaderboardDescription = {
                 readonly decimal_offset: number;
             };
         };
-        readonly type: string;
+        readonly type: 'numeric' | 'time';
     };
     readonly name: string;
     readonly title: {

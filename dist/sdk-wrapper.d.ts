@@ -18,11 +18,15 @@ export type Purchase = {
 };
 export type Product = {
     readonly id: string;
+    readonly meta: Partial<Record<Locale, {
+        readonly name: string;
+        readonly description: string;
+    }>>;
     readonly imageURI: string;
-    readonly price: string;
+    readonly prices: Partial<Record<'YAN' | 'RUB' | 'USD' | 'EUR', number>>;
 };
 export type LeaderboardDescription = {
-    readonly appID: string;
+    readonly name: string;
     readonly dеfault: boolean;
     readonly description: {
         readonly invert_sort_order: boolean;
@@ -31,12 +35,7 @@ export type LeaderboardDescription = {
                 readonly decimal_offset: number;
             };
         };
-        readonly type: string;
-    };
-    readonly name: string;
-    readonly title: {
-        readonly en: string;
-        readonly ru: string;
+        readonly type: 'numeric' | 'time';
     };
 };
 export type LeaderboardEntry = {

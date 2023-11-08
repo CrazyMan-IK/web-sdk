@@ -205,8 +205,22 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         });
     }
     async getProductCatalog() {
-        return this.getPayments().then((payments) => {
-            return payments.getCatalog();
+        return this.getPayments().then(async (payments) => {
+            const catalog = await payments.getCatalog();
+            const result = catalog.map((x) => ({
+                id: x.id,
+                imageURI: x.imageURI,
+                meta: {
+                    [this.locale]: {
+                        name: x.title,
+                        description: x.description
+                    }
+                },
+                prices: {
+                    YAN: parseFloat(x.priceValue)
+                }
+            }));
+            return result;
         });
     }
     async purchaseProduct(productID, developerPayload) {
@@ -231,10 +245,17 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
                 quantityAround: competingPlayersCount,
                 quantityTop: topPlayersCount
             });
-            for (const entry of response.entries) {
-                entry.player.avatar = entry.player.getAvatarSrc('large');
-            }
-            return response;
+            const result = {
+                ...response,
+                entries: response.entries.map((entry) => ({
+                    ...entry,
+                    player: {
+                        ...entry.player,
+                        avatar: entry.player.getAvatarSrc('large')
+                    }
+                }))
+            };
+            return result;
         });
     }
     async getPlayerData(keys = undefined) {

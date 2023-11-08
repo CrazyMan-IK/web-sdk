@@ -517,7 +517,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   ): Promise<LeaderboardEntries> {
     const result: LeaderboardEntries = {
       leaderboard: {
-        appID: '',
+        name: leaderboardName,
         dеfault: false,
 
         description: {
@@ -529,14 +529,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
             }
           },
 
-          type: ''
-        },
-
-        name: leaderboardName,
-
-        title: {
-          en: '',
-          ru: ''
+          type: 'numeric'
         }
       },
       ranges: [],

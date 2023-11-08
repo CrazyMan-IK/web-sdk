@@ -258,7 +258,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   ): Promise<LeaderboardEntries> {
     const result: LeaderboardEntries = {
       leaderboard: {
-        appID: '',
+        name: leaderboardName,
         dеfault: false,
 
         description: {
@@ -270,14 +270,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
             }
           },
 
-          type: ''
-        },
-
-        name: leaderboardName,
-
-        title: {
-          en: '',
-          ru: ''
+          type: 'numeric'
         }
       },
       ranges: [],

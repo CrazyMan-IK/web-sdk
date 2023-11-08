@@ -6,6 +6,7 @@ export default abstract class SDK {
     private static readonly _adClosed;
     private static readonly _initialized;
     private static readonly _rewardedAdReward;
+    private static readonly _overridedProductsCatalog;
     private static _sdk;
     private static _prefs?;
     private static _settingPromise?;
@@ -13,6 +14,7 @@ export default abstract class SDK {
     private static _nextData?;
     private static _isInitialized;
     private static _isGettingData;
+    private static _isAdOpened;
     private static _gettings;
     private static readonly _settingDataCooldown;
     static [STATIC_INIT](sdk: SDKWrapper): Promise<void>;
@@ -25,6 +27,7 @@ export default abstract class SDK {
     static get id(): string;
     static get deviceInfo(): DeviceInfo;
     static get isInitialized(): boolean;
+    static get isAdOpened(): boolean;
     static waitInitialization(): Promise<void>;
     static isMe(uniqueID: string): Promise<boolean>;
     static authorizePlayer(): Promise<void>;
@@ -37,6 +40,7 @@ export default abstract class SDK {
         feedbackSent: boolean;
     }>;
     static getPurchasedProducts(): Promise<Purchase[]>;
+    static overrideProductsCatalog(catalog: Product[]): void;
     static getProductCatalog(): Promise<Product[]>;
     static purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase>;
     static consumeProduct(purchasedProductToken: string): Promise<void>;

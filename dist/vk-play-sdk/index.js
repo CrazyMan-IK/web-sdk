@@ -367,7 +367,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {
         const result = {
             leaderboard: {
-                appID: '',
+                name: leaderboardName,
                 dеfault: false,
                 description: {
                     invert_sort_order: false,
@@ -376,12 +376,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                             decimal_offset: 0
                         }
                     },
-                    type: ''
-                },
-                name: leaderboardName,
-                title: {
-                    en: '',
-                    ru: ''
+                    type: 'numeric'
                 }
             },
             ranges: [],

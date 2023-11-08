@@ -6,6 +6,7 @@ export default class SDK {
     static _adClosed = new SimpleEventDispatcher();
     static _initialized = new SimpleEventDispatcher();
     static _rewardedAdReward = new SimpleEventDispatcher();
+    static _overridedProductsCatalog = [];
     static _sdk;
     static _prefs = undefined;
     static _settingPromise = undefined;
@@ -13,6 +14,7 @@ export default class SDK {
     static _nextData = undefined;
     static _isInitialized = false;
     static _isGettingData = false;
+    static _isAdOpened = false;
     static _gettings = new Map();
     static _settingDataCooldown = 2;
     /*private _startDelay: number = 0.25;
@@ -48,6 +50,9 @@ export default class SDK {
         //Localization.locale = lang;
         Localization.locale = sdk.locale;
         await this.getPlayerData();
+        if (window.showAdOnLoading && this._prefs?.ADS_DISABLED) {
+            this.showInterstitial();
+        }
         window.addEventListener('beforeunload', () => {
             if (!this._prefs) {
                 return;
@@ -123,6 +128,9 @@ export default class SDK {
     static get isInitialized() {
         return this._isInitialized;
     }
+    static get isAdOpened() {
+        return this._isAdOpened;
+    }
     static async waitInitialization() {
         const promise = new Promise((resolve) => {
             const loop = () => {
@@ -151,10 +159,12 @@ export default class SDK {
     static async showInterstitial(callbacks) {
         this._sdk.showInterstitial({
             onOpen: () => {
+                this._isAdOpened = true;
                 callbacks?.onOpen?.();
                 this._adOpened.dispatch();
             },
             onClose: (wasShown) => {
+                this._isAdOpened = false;
                 callbacks?.onClose?.(wasShown);
                 this._adClosed.dispatch();
             },
@@ -164,6 +174,7 @@ export default class SDK {
     static async showRewarded(id, callbacks) {
         this._sdk.showRewarded({
             onOpen: () => {
+                this._isAdOpened = true;
                 callbacks?.onOpen?.();
                 this._adOpened.dispatch();
             },
@@ -172,6 +183,7 @@ export default class SDK {
                 this._rewardedAdReward.dispatch(id);
             },
             onClose: (wasShown) => {
+                this._isAdOpened = false;
                 callbacks?.onClose?.(wasShown);
                 this._adClosed.dispatch();
             },
@@ -187,8 +199,12 @@ export default class SDK {
     static async getPurchasedProducts() {
         return this._sdk.getPurchasedProducts();
     }
+    static overrideProductsCatalog(catalog) {
+        this._overridedProductsCatalog.length = 0;
+        this._overridedProductsCatalog.push(...catalog);
+    }
     static async getProductCatalog() {
-        return this._sdk.getProductCatalog();
+        return this._overridedProductsCatalog.length > 0 ? Promise.resolve(this._overridedProductsCatalog) : this._sdk.getProductCatalog();
     }
     static async purchaseProduct(productId, developerPayload) {
         return this._sdk.purchaseProduct(productId, developerPayload);
