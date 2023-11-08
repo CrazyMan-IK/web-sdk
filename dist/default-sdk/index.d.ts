@@ -1,6 +1,6 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
+import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
     static readonly UniquePlayerID: string;
     private readonly _overridedProductsCatalog;
@@ -29,10 +29,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     requestReview(): Promise<{
         feedbackSent: boolean;
     }>;
-    getPurchasedProducts(): Promise<Purchase[]>;
+    getPurchasedProducts(): Promise<Purchase[] & Signature>;
     overrideProductsCatalog(catalog: Product[]): void;
     getProductCatalog(): Promise<Product[]>;
-    purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;
+    purchaseProduct(productID: string, developerPayload?: string): Promise<{
+        purchaseData: Purchase;
+    } & Signature>;
     consumeProduct(purchasedProductToken: string): Promise<void>;
     setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;

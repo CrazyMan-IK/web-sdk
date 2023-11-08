@@ -336,7 +336,9 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
       });
     } */
     async getPurchasedProducts() {
-        return Promise.resolve([]);
+        const result = [];
+        result.signature = '';
+        return Promise.resolve(result);
     }
     overrideProductsCatalog(catalog) {
         this._overridedProductsCatalog.length = 0;
@@ -358,9 +360,12 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     return;
                 }
                 resolve({
-                    productID: productID,
-                    purchaseToken: result.uid.toString(),
-                    developerPayload: developerPayload,
+                    purchaseData: {
+                        productID: productID,
+                        purchaseTime: 0,
+                        purchaseToken: result.uid.toString(),
+                        developerPayload: developerPayload
+                    },
                     signature: ''
                 });
             });

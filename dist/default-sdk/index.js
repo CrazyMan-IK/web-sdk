@@ -176,7 +176,9 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         return Promise.resolve({ feedbackSent: Math.round(Math.random()) != 0 });
     }
     async getPurchasedProducts() {
-        return Promise.resolve([]);
+        const result = [];
+        result.signature = '';
+        return Promise.resolve(result);
     }
     overrideProductsCatalog(catalog) {
         this._overridedProductsCatalog.length = 0;
@@ -187,9 +189,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     }
     async purchaseProduct(productID, developerPayload) {
         return Promise.resolve({
-            productID: productID,
-            purchaseToken: '',
-            developerPayload: developerPayload,
+            purchaseData: {
+                productID: productID,
+                purchaseTime: 0,
+                purchaseToken: '',
+                developerPayload: developerPayload
+            },
             signature: ''
         });
     }

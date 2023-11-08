@@ -1,5 +1,5 @@
 import { IntRange } from './global';
-import SDKWrapper, { Player, Purchase, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks, CanReviewResponse } from './sdk-wrapper';
+import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks, CanReviewResponse } from './sdk-wrapper';
 declare const STATIC_INIT: unique symbol;
 export default abstract class SDK {
     private static readonly _adOpened;
@@ -38,10 +38,12 @@ export default abstract class SDK {
     static requestReview(): Promise<{
         feedbackSent: boolean;
     }>;
-    static getPurchasedProducts(): Promise<Purchase[]>;
+    static getPurchasedProducts(): Promise<Purchase[] & Signature>;
     static overrideProductsCatalog(catalog: Product[]): void;
     static getProductCatalog(): Promise<Product[]>;
-    static purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase>;
+    static purchaseProduct(productId: string, developerPayload?: string): Promise<{
+        purchaseData: Purchase;
+    } & Signature>;
     static consumeProduct(purchasedProductToken: string): Promise<void>;
     static setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     static getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;

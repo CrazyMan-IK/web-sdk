@@ -19,11 +19,14 @@ export type Player = {
         userID: string;
     }>;
 };
+export type Signature = {
+    readonly signature: string;
+};
 export type Purchase = {
     readonly productID: string;
+    readonly purchaseTime: number;
     readonly purchaseToken: string;
     readonly developerPayload: string;
-    readonly signature: string;
 };
 export type Product = {
     readonly id: string;
@@ -39,8 +42,10 @@ export type Payments = {
     purchase(options?: {
         id: string;
         developerPayload?: string;
-    }): Promise<Purchase>;
-    getPurchases(): Promise<Purchase[]>;
+    }): Promise<{
+        purchaseData: Purchase;
+    } & Signature>;
+    getPurchases(): Promise<Purchase[] & Signature>;
     getCatalog(): Promise<Product[]>;
     consumePurchase(purchasedProductToken: string): Promise<void>;
 };

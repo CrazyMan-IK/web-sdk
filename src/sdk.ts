@@ -4,6 +4,7 @@ import Localization from './localization';
 import SDKWrapper, {
   Player,
   Purchase,
+  Signature,
   Product,
   LeaderboardEntries,
   DeviceInfo,
@@ -262,7 +263,7 @@ export default abstract class SDK {
     return this._sdk.requestReview();
   }
 
-  public static async getPurchasedProducts(): Promise<Purchase[]> {
+  public static async getPurchasedProducts(): Promise<Purchase[] & Signature> {
     return this._sdk.getPurchasedProducts();
   }
 
@@ -274,7 +275,7 @@ export default abstract class SDK {
     return this._sdk.getProductCatalog();
   }
 
-  public static async purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase> {
+  public static async purchaseProduct(productId: string, developerPayload?: string): Promise<{ purchaseData: Purchase } & Signature> {
     return this._sdk.purchaseProduct(productId, developerPayload);
   }
 

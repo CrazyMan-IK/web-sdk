@@ -5,6 +5,7 @@ import SDKWrapper, {
   DeviceInfo,
   InterstitialCallbacks,
   Purchase,
+  Signature,
   Product,
   LeaderboardEntry,
   LeaderboardEntries,
@@ -266,7 +267,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     });
   }
 
-  public async getPurchasedProducts(): Promise<Purchase[]> {
+  public async getPurchasedProducts(): Promise<Purchase[] & Signature> {
     return this.getPayments().then((payments) => {
       return payments.getPurchases();
     });
@@ -305,7 +306,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         });
   }
 
-  public async purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase> {
+  public async purchaseProduct(productID: string, developerPayload?: string): Promise<{ purchaseData: Purchase } & Signature> {
     return this.getPayments().then((payments) => {
       return payments.purchase({ id: productID, developerPayload });
     });

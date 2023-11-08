@@ -26,11 +26,15 @@ export type Player = {
   get uuid(): string;
 };
 
+export type Signature = {
+  readonly signature: string;
+};
+
 export type Purchase = {
   readonly productID: string;
+  readonly purchaseTime: number;
   readonly purchaseToken: string;
   readonly developerPayload?: string;
-  readonly signature: string;
 };
 
 export type ProductMeta = {
@@ -138,10 +142,10 @@ export default abstract class SDKWrapper {
   public abstract canReview(): Promise<CanReviewResponse>;
   public abstract requestReview(): Promise<{ feedbackSent: boolean }>;
 
-  public abstract getPurchasedProducts(): Promise<Purchase[]>;
+  public abstract getPurchasedProducts(): Promise<Purchase[] & Signature>;
   public abstract overrideProductsCatalog(catalog: Product[]): void;
   public abstract getProductCatalog(): Promise<Product[]>;
-  public abstract purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;
+  public abstract purchaseProduct(productID: string, developerPayload?: string): Promise<{ purchaseData: Purchase } & Signature>;
   public abstract consumeProduct(purchasedProductToken: string): Promise<void>;
 
   public abstract setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;

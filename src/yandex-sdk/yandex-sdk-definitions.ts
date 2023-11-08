@@ -21,11 +21,15 @@ export type Player = {
   getIDsPerGame(): Promise<{ appID: string; userID: string }>;
 };
 
+export type Signature = {
+  readonly signature: string;
+};
+
 export type Purchase = {
   readonly productID: string;
+  readonly purchaseTime: number;
   readonly purchaseToken: string;
   readonly developerPayload: string;
-  readonly signature: string;
 };
 
 export type Product = {
@@ -41,8 +45,8 @@ export type Product = {
 };
 
 export type Payments = {
-  purchase(options?: { id: string; developerPayload?: string }): Promise<Purchase>;
-  getPurchases(): Promise<Purchase[]>;
+  purchase(options?: { id: string; developerPayload?: string }): Promise<{ purchaseData: Purchase } & Signature>;
+  getPurchases(): Promise<Purchase[] & Signature>;
   getCatalog(): Promise<Product[]>;
   consumePurchase(purchasedProductToken: string): Promise<void>;
 };

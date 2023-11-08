@@ -2,9 +2,9 @@ import { IntRange } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, {
   Player,
-  DeviceInfo,
   InterstitialCallbacks,
   Purchase,
+  Signature,
   Product,
   LeaderboardEntries,
   LeaderboardEntry,
@@ -222,8 +222,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     return Promise.resolve({ feedbackSent: Math.round(Math.random()) != 0 });
   }
 
-  public async getPurchasedProducts(): Promise<Purchase[]> {
-    return Promise.resolve([]);
+  public async getPurchasedProducts(): Promise<Purchase[] & Signature> {
+    const result: Purchase[] & Signature = [] as any;
+    (result as any).signature = '';
+
+    return Promise.resolve(result);
   }
 
   public overrideProductsCatalog(catalog: Product[]): void {
@@ -235,11 +238,14 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     return Promise.resolve(this._overridedProductsCatalog);
   }
 
-  public async purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase> {
-    return Promise.resolve<Purchase>({
-      productID: productID,
-      purchaseToken: '',
-      developerPayload: developerPayload,
+  public async purchaseProduct(productID: string, developerPayload?: string) {
+    return Promise.resolve<{ purchaseData: Purchase } & Signature>({
+      purchaseData: {
+        productID: productID,
+        purchaseTime: 0,
+        purchaseToken: '',
+        developerPayload: developerPayload
+      },
       signature: ''
     });
   }

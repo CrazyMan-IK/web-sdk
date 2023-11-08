@@ -1,6 +1,6 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { Player, DeviceInfo, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
+import SDKWrapper, { Player, DeviceInfo, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
 import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
 declare global {
     interface Window {
@@ -57,10 +57,12 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     getPlayerInternal(): Promise<YPlayer>;
     getPayments(): Promise<Payments>;
     getLeaderboards(): Promise<Leaderboards>;
-    getPurchasedProducts(): Promise<Purchase[]>;
+    getPurchasedProducts(): Promise<Purchase[] & Signature>;
     overrideProductsCatalog(catalog: Product[]): void;
     getProductCatalog(): Promise<Product[]>;
-    purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;
+    purchaseProduct(productID: string, developerPayload?: string): Promise<{
+        purchaseData: Purchase;
+    } & Signature>;
     consumeProduct(purchasedProductToken: string): Promise<void>;
     setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
