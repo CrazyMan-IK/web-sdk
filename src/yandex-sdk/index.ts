@@ -278,12 +278,12 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
       const result = catalog.map<Product>((x) => ({
         id: x.id,
         imageURI: x.imageURI,
-        meta: {
+        /* meta: {
           [this.locale]: {
             name: x.title,
             description: x.description
           }
-        },
+        }, */
         prices: {
           YAN: parseFloat(x.priceValue)
         }
@@ -330,7 +330,16 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
           ...entry,
           player: {
             ...entry.player,
-            avatar: entry.player.getAvatarSrc('large')
+            isAuthorized: entry.player.scopePermissions.avatar != 'not_set',
+            hasNamePermission: entry.player.scopePermissions.public_name == 'allow',
+            hasPhotoPermission: entry.player.scopePermissions.avatar == 'allow',
+            name: entry.player.publicName,
+            photo: {
+              small: entry.player.getAvatarSrc('small'),
+              medium: entry.player.getAvatarSrc('medium'),
+              large: entry.player.getAvatarSrc('large')
+            },
+            uuid: entry.player.uniqueID
           }
         }))
       };

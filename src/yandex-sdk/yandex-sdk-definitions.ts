@@ -81,8 +81,8 @@ export type LeaderboardEntry = {
     readonly publicName: string;
 
     readonly scopePermissions: {
-      readonly avatar: string;
-      readonly public_name: string;
+      readonly avatar: 'not_set' | 'forbid' | 'allow';
+      readonly public_name: 'not_set' | 'forbid' | 'allow';
     };
 
     readonly uniqueID: string;

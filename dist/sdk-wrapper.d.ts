@@ -18,10 +18,6 @@ export type Purchase = {
 };
 export type Product = {
     readonly id: string;
-    readonly meta: Partial<Record<Locale, {
-        readonly name: string;
-        readonly description: string;
-    }>>;
     readonly imageURI: string;
     readonly prices: Partial<Record<'YAN' | 'RUB' | 'USD' | 'EUR', number>>;
 };
@@ -42,18 +38,7 @@ export type LeaderboardEntry = {
     readonly score: number;
     readonly extraData: string;
     readonly rank: number;
-    readonly player: {
-        readonly lang: string;
-        readonly publicName: string;
-        readonly scopePermissions: {
-            readonly avatar: string;
-            readonly public_name: string;
-        };
-        readonly avatar: string;
-        readonly uniqueID: string;
-        getAvatarSrc(size: 'small' | 'medium' | 'large'): string;
-        getAvatarSrcSet(size: 'small' | 'medium' | 'large'): string;
-    };
+    readonly player: Player;
     readonly formattedScore: string;
 };
 export type LeaderboardEntries = {

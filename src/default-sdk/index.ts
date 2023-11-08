@@ -287,22 +287,27 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         rank: competingPlayersCount - i + 1,
 
         player: {
-          lang: 'ru',
-          publicName: 'Debug Name',
-
-          scopePermissions: {
-            avatar: 'allow',
-            public_name: 'allow'
+          get isAuthorized() {
+            return true;
           },
-
-          avatar: 'https://i.pravatar.cc/256',
-          uniqueID: i == me ? DefaultSDKWrapper.UniquePlayerID : '',
-
-          getAvatarSrc(size: 'small' | 'medium' | 'large'): string {
-            return 'https://i.pravatar.cc/256';
+          get hasNamePermission() {
+            return true;
           },
-          getAvatarSrcSet(size: 'small' | 'medium' | 'large'): string {
-            return 'https://i.pravatar.cc/256';
+          get hasPhotoPermission() {
+            return true;
+          },
+          get name() {
+            return 'Debug Name';
+          },
+          get photo() {
+            return {
+              small: 'https://i.pravatar.cc/256',
+              medium: 'https://i.pravatar.cc/256',
+              large: 'https://i.pravatar.cc/256'
+            };
+          },
+          get uuid() {
+            return i == me ? DefaultSDKWrapper.UniquePlayerID : '';
           }
         },
 
