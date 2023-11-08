@@ -16,8 +16,13 @@ export type Purchase = {
     readonly developerPayload?: string;
     readonly signature: string;
 };
+export type ProductMeta = {
+    readonly name: string;
+    readonly description: string;
+};
 export type Product = {
     readonly id: string;
+    readonly meta: Record<'en' | 'ru', ProductMeta> & Partial<Record<'tr' | 'de', ProductMeta>>;
     readonly imageURI: string;
     readonly prices: Partial<Record<'YAN' | 'RUB' | 'USD' | 'EUR', number>>;
 };
@@ -94,6 +99,7 @@ export default abstract class SDKWrapper {
         feedbackSent: boolean;
     }>;
     abstract getPurchasedProducts(): Promise<Purchase[]>;
+    abstract overrideProductsCatalog(catalog: Product[]): void;
     abstract getProductCatalog(): Promise<Product[]>;
     abstract purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;
     abstract consumeProduct(purchasedProductToken: string): Promise<void>;

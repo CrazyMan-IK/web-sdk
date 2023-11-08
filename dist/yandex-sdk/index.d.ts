@@ -10,6 +10,7 @@ declare global {
     }
 }
 export default class YandexGamesSDKWrapper extends SDKWrapper {
+    private readonly _overridedProductsCatalog;
     private readonly _sdk;
     private readonly _isDraft;
     private _player;
@@ -57,6 +58,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     getPayments(): Promise<Payments>;
     getLeaderboards(): Promise<Leaderboards>;
     getPurchasedProducts(): Promise<Purchase[]>;
+    overrideProductsCatalog(catalog: Product[]): void;
     getProductCatalog(): Promise<Product[]>;
     purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;
     consumeProduct(purchasedProductToken: string): Promise<void>;

@@ -14,6 +14,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     _userProfileCallbackReceived = new SimpleEventDispatcher();
     _userFriendsCallbackReceived = new SimpleEventDispatcher();
     _userSocialFriendsCallbackReceived = new SimpleEventDispatcher();
+    _overridedProductsCatalog = [];
     _isDraft;
     _appID;
     _lang;
@@ -337,11 +338,20 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     async getPurchasedProducts() {
         return Promise.resolve([]);
     }
+    overrideProductsCatalog(catalog) {
+        this._overridedProductsCatalog.length = 0;
+        this._overridedProductsCatalog.push(...catalog);
+    }
     async getProductCatalog() {
-        return Promise.resolve([]);
+        return Promise.resolve(this._overridedProductsCatalog);
     }
     async purchaseProduct(productID, developerPayload) {
         return new Promise((resolve, reject) => {
+            const product = this._overridedProductsCatalog.find((x) => x.id == productID);
+            if (product == null || product.prices.RUB == null || product.prices.RUB <= 0) {
+                reject();
+                return;
+            }
             this._paymentCompletedCallbackReceived.one((result) => {
                 if (result.status == 'closed') {
                     reject();
@@ -353,6 +363,33 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     developerPayload: developerPayload,
                     signature: ''
                 });
+            });
+            let meta;
+            switch (this.lang) {
+                case 'ru':
+                    meta = product.meta.ru;
+                    break;
+                case 'tr':
+                    meta = product.meta.tr;
+                    break;
+                case 'de':
+                    meta = product.meta.de;
+                    break;
+                default:
+                    meta = product.meta.en;
+                    break;
+            }
+            if (meta == null) {
+                meta = product.meta.en;
+            }
+            this._sdk?.paymentFrame({
+                merchant_param: {
+                    amount: product.prices.RUB,
+                    item_id: product.id,
+                    description: meta.description,
+                    currency: 'RUB',
+                    currency_auto_convert: true
+                }
             });
         });
     }

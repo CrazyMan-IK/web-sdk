@@ -15,6 +15,7 @@ import SDKWrapper, {
 export default class DefaultSDKWrapper extends SDKWrapper {
   public static readonly UniquePlayerID: string = 'UniquePlayerID';
 
+  private readonly _overridedProductsCatalog: Product[] = [];
   private readonly _lang: string;
   private readonly _tld: string;
   private readonly _isDraft: boolean;
@@ -225,8 +226,13 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     return Promise.resolve([]);
   }
 
+  public overrideProductsCatalog(catalog: Product[]): void {
+    this._overridedProductsCatalog.length = 0;
+    this._overridedProductsCatalog.push(...catalog);
+  }
+
   public async getProductCatalog(): Promise<Product[]> {
-    return Promise.resolve([]);
+    return Promise.resolve(this._overridedProductsCatalog);
   }
 
   public async purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase> {

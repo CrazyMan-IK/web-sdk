@@ -86,6 +86,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     private readonly _userProfileCallbackReceived;
     private readonly _userFriendsCallbackReceived;
     private readonly _userSocialFriendsCallbackReceived;
+    private readonly _overridedProductsCatalog;
     private readonly _isDraft;
     private readonly _appID;
     private readonly _lang;
@@ -117,6 +118,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         feedbackSent: boolean;
     }>;
     getPurchasedProducts(): Promise<Purchase[]>;
+    overrideProductsCatalog(catalog: Product[]): void;
     getProductCatalog(): Promise<Product[]>;
     purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;
     consumeProduct(purchasedProductToken: string): Promise<void>;

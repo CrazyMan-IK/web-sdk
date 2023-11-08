@@ -1,8 +1,9 @@
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class YandexGamesSDKWrapper extends SDKWrapper {
+    _overridedProductsCatalog = [];
     _sdk;
-    _isDraft = false;
+    _isDraft;
     _player = null;
     _yplayer = null;
     _payments = null;
@@ -204,24 +205,34 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             return payments.getPurchases();
         });
     }
+    overrideProductsCatalog(catalog) {
+        this._overridedProductsCatalog.length = 0;
+        this._overridedProductsCatalog.push(...catalog);
+    }
     async getProductCatalog() {
-        return this.getPayments().then(async (payments) => {
-            const catalog = await payments.getCatalog();
-            const result = catalog.map((x) => ({
-                id: x.id,
-                imageURI: x.imageURI,
-                /* meta: {
-                  [this.locale]: {
-                    name: x.title,
-                    description: x.description
-                  }
-                }, */
-                prices: {
-                    YAN: parseFloat(x.priceValue)
-                }
-            }));
-            return result;
-        });
+        return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN != null
+            ? Promise.resolve(this._overridedProductsCatalog)
+            : this.getPayments().then(async (payments) => {
+                const catalog = await payments.getCatalog();
+                const result = catalog.map((x) => ({
+                    id: x.id,
+                    imageURI: x.imageURI,
+                    meta: {
+                        en: {
+                            name: x.title,
+                            description: x.description
+                        },
+                        ru: {
+                            name: x.title,
+                            description: x.description
+                        }
+                    },
+                    prices: {
+                        YAN: parseFloat(x.priceValue)
+                    }
+                }));
+                return result;
+            });
     }
     async purchaseProduct(productID, developerPayload) {
         return this.getPayments().then((payments) => {

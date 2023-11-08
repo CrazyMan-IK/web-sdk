@@ -22,8 +22,9 @@ declare global {
 }
 
 export default class YandexGamesSDKWrapper extends SDKWrapper {
+  private readonly _overridedProductsCatalog: Product[] = [];
   private readonly _sdk: YandexGamesSDK;
-  private readonly _isDraft: boolean = false;
+  private readonly _isDraft: boolean;
 
   private _player: Player | null = null;
   private _yplayer: YPlayer | null = null;
@@ -271,26 +272,37 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     });
   }
 
+  public overrideProductsCatalog(catalog: Product[]): void {
+    this._overridedProductsCatalog.length = 0;
+    this._overridedProductsCatalog.push(...catalog);
+  }
+
   public async getProductCatalog(): Promise<Product[]> {
-    return this.getPayments().then(async (payments) => {
-      const catalog = await payments.getCatalog();
+    return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN != null
+      ? Promise.resolve(this._overridedProductsCatalog)
+      : this.getPayments().then(async (payments) => {
+          const catalog = await payments.getCatalog();
 
-      const result = catalog.map<Product>((x) => ({
-        id: x.id,
-        imageURI: x.imageURI,
-        /* meta: {
-          [this.locale]: {
-            name: x.title,
-            description: x.description
-          }
-        }, */
-        prices: {
-          YAN: parseFloat(x.priceValue)
-        }
-      }));
+          const result = catalog.map<Product>((x) => ({
+            id: x.id,
+            imageURI: x.imageURI,
+            meta: {
+              en: {
+                name: x.title,
+                description: x.description
+              },
+              ru: {
+                name: x.title,
+                description: x.description
+              }
+            },
+            prices: {
+              YAN: parseFloat(x.priceValue)
+            }
+          }));
 
-      return result;
-    });
+          return result;
+        });
   }
 
   public async purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase> {

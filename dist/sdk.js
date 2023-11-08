@@ -6,7 +6,6 @@ export default class SDK {
     static _adClosed = new SimpleEventDispatcher();
     static _initialized = new SimpleEventDispatcher();
     static _rewardedAdReward = new SimpleEventDispatcher();
-    static _overridedProductsCatalog = [];
     static _sdk;
     static _prefs = undefined;
     static _settingPromise = undefined;
@@ -200,11 +199,10 @@ export default class SDK {
         return this._sdk.getPurchasedProducts();
     }
     static overrideProductsCatalog(catalog) {
-        this._overridedProductsCatalog.length = 0;
-        this._overridedProductsCatalog.push(...catalog);
+        this._sdk.overrideProductsCatalog(catalog);
     }
     static async getProductCatalog() {
-        return this._overridedProductsCatalog.length > 0 ? Promise.resolve(this._overridedProductsCatalog) : this._sdk.getProductCatalog();
+        return this._sdk.getProductCatalog();
     }
     static async purchaseProduct(productId, developerPayload) {
         return this._sdk.purchaseProduct(productId, developerPayload);

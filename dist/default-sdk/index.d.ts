@@ -3,6 +3,7 @@ import { Locale } from '../localization';
 import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
     static readonly UniquePlayerID: string;
+    private readonly _overridedProductsCatalog;
     private readonly _lang;
     private readonly _tld;
     private readonly _isDraft;
@@ -29,6 +30,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         feedbackSent: boolean;
     }>;
     getPurchasedProducts(): Promise<Purchase[]>;
+    overrideProductsCatalog(catalog: Product[]): void;
     getProductCatalog(): Promise<Product[]>;
     purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase>;
     consumeProduct(purchasedProductToken: string): Promise<void>;

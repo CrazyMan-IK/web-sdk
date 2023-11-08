@@ -9,7 +9,8 @@ import SDKWrapper, {
   LeaderboardEntries,
   LeaderboardEntry,
   RewardedCallbacks,
-  CanReviewResponse
+  CanReviewResponse,
+  ProductMeta
 } from '../sdk-wrapper';
 import { VKPlaySDK } from './vk-play-sdk-definitions';
 
@@ -92,6 +93,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   private readonly _userSocialFriendsCallbackReceived: SimpleEventDispatcher<{ status: 'ok'; friends: SocialUserProfile[] } | VKError> =
     new SimpleEventDispatcher();
 
+  private readonly _overridedProductsCatalog: Product[] = [];
   private readonly _isDraft: boolean;
   private readonly _appID: string;
   private readonly _lang: string;
@@ -474,12 +476,25 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     return Promise.resolve([]);
   }
 
+  public overrideProductsCatalog(catalog: Product[]): void {
+    this._overridedProductsCatalog.length = 0;
+    this._overridedProductsCatalog.push(...catalog);
+  }
+
   public async getProductCatalog(): Promise<Product[]> {
-    return Promise.resolve([]);
+    return Promise.resolve(this._overridedProductsCatalog);
   }
 
   public async purchaseProduct(productID: string, developerPayload?: string): Promise<Purchase> {
     return new Promise<Purchase>((resolve, reject) => {
+      const product = this._overridedProductsCatalog.find((x) => x.id == productID);
+
+      if (product == null || product.prices.RUB == null || product.prices.RUB <= 0) {
+        reject();
+
+        return;
+      }
+
       this._paymentCompletedCallbackReceived.one((result) => {
         if (result.status == 'closed') {
           reject();
@@ -493,6 +508,36 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
           developerPayload: developerPayload,
           signature: ''
         });
+      });
+
+      let meta: ProductMeta | undefined;
+      switch (this.lang) {
+        case 'ru':
+          meta = product.meta.ru;
+          break;
+        case 'tr':
+          meta = product.meta.tr;
+          break;
+        case 'de':
+          meta = product.meta.de;
+          break;
+        default:
+          meta = product.meta.en;
+          break;
+      }
+
+      if (meta == null) {
+        meta = product.meta.en;
+      }
+
+      this._sdk?.paymentFrame({
+        merchant_param: {
+          amount: product.prices.RUB,
+          item_id: product.id,
+          description: meta.description,
+          currency: 'RUB',
+          currency_auto_convert: true
+        }
       });
     });
   }

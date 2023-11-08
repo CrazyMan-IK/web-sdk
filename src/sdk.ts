@@ -21,8 +21,6 @@ export default abstract class SDK {
   private static readonly _initialized: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
   private static readonly _rewardedAdReward: SimpleEventDispatcher<string> = new SimpleEventDispatcher();
 
-  private static readonly _overridedProductsCatalog: Product[] = [];
-
   private static _sdk: SDKWrapper;
 
   private static _prefs?: Record<string, any> = undefined;
@@ -269,12 +267,11 @@ export default abstract class SDK {
   }
 
   public static overrideProductsCatalog(catalog: Product[]): void {
-    this._overridedProductsCatalog.length = 0;
-    this._overridedProductsCatalog.push(...catalog);
+    this._sdk.overrideProductsCatalog(catalog);
   }
 
   public static async getProductCatalog(): Promise<Product[]> {
-    return this._overridedProductsCatalog.length > 0 ? Promise.resolve(this._overridedProductsCatalog) : this._sdk.getProductCatalog();
+    return this._sdk.getProductCatalog();
   }
 
   public static async purchaseProduct(productId: string, developerPayload?: string): Promise<Purchase> {

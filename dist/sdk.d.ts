@@ -6,7 +6,6 @@ export default abstract class SDK {
     private static readonly _adClosed;
     private static readonly _initialized;
     private static readonly _rewardedAdReward;
-    private static readonly _overridedProductsCatalog;
     private static _sdk;
     private static _prefs?;
     private static _settingPromise?;

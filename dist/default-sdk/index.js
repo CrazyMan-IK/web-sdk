@@ -2,6 +2,7 @@ import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
     static UniquePlayerID = 'UniquePlayerID';
+    _overridedProductsCatalog = [];
     _lang;
     _tld;
     _isDraft;
@@ -177,8 +178,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     async getPurchasedProducts() {
         return Promise.resolve([]);
     }
+    overrideProductsCatalog(catalog) {
+        this._overridedProductsCatalog.length = 0;
+        this._overridedProductsCatalog.push(...catalog);
+    }
     async getProductCatalog() {
-        return Promise.resolve([]);
+        return Promise.resolve(this._overridedProductsCatalog);
     }
     async purchaseProduct(productID, developerPayload) {
         return Promise.resolve({
