@@ -384,7 +384,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     meta = product.meta.en;
                     break;
             }
-            if (meta == null) {
+            if (!meta) {
                 meta = product.meta.en;
             }
             this._sdk?.paymentFrame({
