@@ -284,7 +284,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   public async authorizePlayer(): Promise<void> {
     this._sdk?.authUser();
 
-    return Promise.resolve();
+    return Promise.reject();
 
     /* return new Promise((resolve, reject) => {
       this._registerUserCallbackReceived.one((info) => {
