@@ -282,7 +282,11 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
   }
 
   public async authorizePlayer(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    this._sdk?.authUser();
+
+    return Promise.resolve();
+
+    /* return new Promise((resolve, reject) => {
       this._registerUserCallbackReceived.one((info) => {
         if (info.status == 'error') {
           reject(info.errmsg);
@@ -290,14 +294,11 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
           return;
         }
 
-        /* this._isAuthorized = true;
-        this._playerInfo = info; */
-
         resolve();
       });
 
       this._sdk?.registerUser();
-    });
+    }); */
   }
 
   public async getPlayer(): Promise<Player> {
@@ -306,12 +307,28 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     }
 
     return new Promise((resolve, reject) => {
-      this._getLoginStatusCallbackReceived.one((loginStatus) => {
+      this._getLoginStatusCallbackReceived.one(async (loginStatus) => {
         if (loginStatus.status == 'error') {
           reject(loginStatus.errmsg);
 
           return;
         }
+
+        if (loginStatus.loginStatus == 1) {
+          this._sdk?.registerUser();
+        }
+
+        await new Promise<void>((resolve, reject) => {
+          this._registerUserCallbackReceived.one((info) => {
+            if (info.status == 'error') {
+              reject(info.errmsg);
+
+              return;
+            }
+
+            resolve();
+          });
+        });
 
         if (loginStatus.loginStatus > 1) {
           this._userProfileCallbackReceived.one((userProfile) => {
