@@ -199,17 +199,17 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     return;
                 }
                 if (loginStatus.loginStatus == 1) {
-                    this._sdk?.registerUser();
-                }
-                await new Promise((resolve, reject) => {
-                    this._registerUserCallbackReceived.one((info) => {
-                        if (info.status == 'error') {
-                            reject(info.errmsg);
-                            return;
-                        }
-                        resolve();
+                    await new Promise((resolve, reject) => {
+                        this._registerUserCallbackReceived.one((info) => {
+                            if (info.status == 'error') {
+                                reject(info.errmsg);
+                                return;
+                            }
+                            resolve();
+                        });
+                        this._sdk?.registerUser();
                     });
-                });
+                }
                 if (loginStatus.loginStatus > 1) {
                     this._userProfileCallbackReceived.one((userProfile) => {
                         if (userProfile.status == 'error') {
