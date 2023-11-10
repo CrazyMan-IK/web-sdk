@@ -225,6 +225,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                                 return userProfile.slug;
                             }
                         };
+                        this._sdk?.userInfo();
                         resolve(this._player);
                     });
                     this._sdk?.userProfile();
