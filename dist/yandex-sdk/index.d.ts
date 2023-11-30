@@ -2,13 +2,6 @@ import { IntRange } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, { Player, DeviceInfo, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
 import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
-declare global {
-    interface Window {
-        ym(counterId: number, arg: string, data?: Record<string, any>): void;
-        ym(counterId: number, arg: string, eventName: string, data?: Record<string, any>): void;
-        yandexMetricaCounterId: number;
-    }
-}
 export default class YandexGamesSDKWrapper extends SDKWrapper {
     private readonly _overridedProductsCatalog;
     private readonly _sdk;

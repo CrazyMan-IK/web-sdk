@@ -14,13 +14,11 @@ import SDKWrapper, {
 } from '../sdk-wrapper';
 import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
 
-declare global {
-  interface Window {
-    ym(counterId: number, arg: string, data?: Record<string, any>): void;
-    ym(counterId: number, arg: string, eventName: string, data?: Record<string, any>): void;
-    yandexMetricaCounterId: number;
-  }
-}
+declare const window: {
+  ym(counterId: number, arg: string, data?: Record<string, any>): void;
+  ym(counterId: number, arg: string, eventName: string, data?: Record<string, any>): void;
+  yandexMetricaCounterId: number;
+} & Window;
 
 export default class YandexGamesSDKWrapper extends SDKWrapper {
   private readonly _overridedProductsCatalog: Product[] = [];
@@ -98,7 +96,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
       m[i] =
         m[i] ||
         function (...rest: any[]) {
-          (m[i].a = m[i].a || []).push(...rest);
+          (m[i].a = m[i].a || []).push(rest);
         };
       m[i].l = new Date().getTime();
       for (let j = 0; j < document.scripts.length; j++) {
@@ -175,34 +173,63 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
       return this._player;
     }
 
-    return this.getPlayerInternal().then((player) => {
-      this._player = {
-        get isAuthorized() {
-          return player.getMode() !== 'lite';
-        },
-        get hasNamePermission() {
-          return player._personalInfo.scopePermissions.public_name == 'allow';
-        },
-        get hasPhotoPermission() {
-          return player._personalInfo.scopePermissions.avatar == 'allow';
-        },
-        get name() {
-          return player.getName();
-        },
-        get photo() {
-          return {
-            small: player.getPhoto('small'),
-            medium: player.getPhoto('medium'),
-            large: player.getPhoto('large')
-          };
-        },
-        get uuid() {
-          return player.getUniqueID();
-        }
-      };
+    return this.getPlayerInternal()
+      .then((player) => {
+        this._player = {
+          get isAuthorized() {
+            return player.getMode() !== 'lite';
+          },
+          get hasNamePermission() {
+            return player._personalInfo.scopePermissions.public_name == 'allow';
+          },
+          get hasPhotoPermission() {
+            return player._personalInfo.scopePermissions.avatar == 'allow';
+          },
+          get name() {
+            return player.getName();
+          },
+          get photo() {
+            return {
+              small: player.getPhoto('small'),
+              medium: player.getPhoto('medium'),
+              large: player.getPhoto('large')
+            };
+          },
+          get uuid() {
+            return player.getUniqueID();
+          }
+        };
 
-      return this._player;
-    });
+        return this._player;
+      })
+      .catch(() => {
+        this._player = {
+          get isAuthorized() {
+            return false;
+          },
+          get hasNamePermission() {
+            return false;
+          },
+          get hasPhotoPermission() {
+            return false;
+          },
+          get name() {
+            return '';
+          },
+          get photo() {
+            return {
+              small: '',
+              medium: '',
+              large: ''
+            };
+          },
+          get uuid() {
+            return '';
+          }
+        };
+
+        return this._player;
+      });
   }
 
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
@@ -279,7 +306,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
   }
 
   public async getProductCatalog(): Promise<Product[]> {
-    return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN != null
+    return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN
       ? Promise.resolve(this._overridedProductsCatalog)
       : this.getPayments().then(async (payments) => {
           const catalog = await payments.getCatalog();

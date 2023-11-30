@@ -91,7 +91,9 @@ export default class SDK {
         this._isInitialized = true;
         this._initialized.dispatch();
         //setLocalStorageItem('DATA', JSON.stringify(this._prefs));
-        this._sdk.ready();
+        if (!window.externalReady) {
+            this.ready();
+        }
         /*if (this._sdk.isAdOpened) {
           this._adOpened.dispatch();
           while (this._sdk.isAdOpened) {
@@ -142,6 +144,9 @@ export default class SDK {
             loop();
         });
         return promise;
+    }
+    static ready() {
+        this._sdk.ready();
     }
     static async isMe(uniqueID) {
         return this._sdk.isMe(uniqueID);

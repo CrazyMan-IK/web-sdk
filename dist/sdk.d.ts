@@ -28,6 +28,7 @@ export default abstract class SDK {
     static get isInitialized(): boolean;
     static get isAdOpened(): boolean;
     static waitInitialization(): Promise<void>;
+    static ready(): void;
     static isMe(uniqueID: string): Promise<boolean>;
     static authorizePlayer(): Promise<void>;
     static getPlayer(): Promise<Player>;

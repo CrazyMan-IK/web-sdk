@@ -16,6 +16,11 @@ import { YandexGamesSDK } from './yandex-sdk/yandex-sdk-definitions';
 
 const STATIC_INIT = Symbol();
 
+declare const window: {
+  externalReady?: boolean;
+  showAdOnLoading?: boolean;
+} & Window;
+
 export default abstract class SDK {
   private static readonly _adOpened: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
   private static readonly _adClosed: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
@@ -75,7 +80,7 @@ export default abstract class SDK {
 
     await this.getPlayerData();
 
-    if ((window as any).showAdOnLoading && this._prefs?.ADS_DISABLED) {
+    if (window.showAdOnLoading && this._prefs?.ADS_DISABLED) {
       this.showInterstitial();
     }
 
@@ -130,7 +135,9 @@ export default abstract class SDK {
 
     //setLocalStorageItem('DATA', JSON.stringify(this._prefs));
 
-    this._sdk.ready();
+    if (!window.externalReady) {
+      this.ready();
+    }
 
     /*if (this._sdk.isAdOpened) {
       this._adOpened.dispatch();
@@ -197,6 +204,10 @@ export default abstract class SDK {
     });
 
     return promise;
+  }
+
+  public static ready(): void {
+    this._sdk.ready();
   }
 
   public static async isMe(uniqueID: string): Promise<boolean> {

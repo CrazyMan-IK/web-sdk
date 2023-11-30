@@ -70,11 +70,9 @@ type CallbacksContainer = {
   userSocialFriendsCallback(data: { status: 'ok'; friends: SocialUserProfile[] } | VKError): void;
 };
 
-declare global {
-  interface Window {
-    iframeApi(myApi: CallbacksContainer, options: { debug: boolean }): Promise<VKPlaySDK>;
-  }
-}
+declare const window: {
+  iframeApi(myApi: CallbacksContainer, options: { debug: boolean }): Promise<VKPlaySDK>;
+} & Window;
 
 export default class VKPlaySDKWrapper extends SDKWrapper {
   private readonly _getLoginStatusCallbackReceived: SimpleEventDispatcher<{ status: 'ok'; loginStatus: 0 | 1 | 2 | 3 } | VKError> = new SimpleEventDispatcher();

@@ -62,7 +62,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             m[i] =
                 m[i] ||
                     function (...rest) {
-                        (m[i].a = m[i].a || []).push(...rest);
+                        (m[i].a = m[i].a || []).push(rest);
                     };
             m[i].l = new Date().getTime();
             for (let j = 0; j < document.scripts.length; j++) {
@@ -126,7 +126,8 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         if (this._player !== null) {
             return this._player;
         }
-        return this.getPlayerInternal().then((player) => {
+        return this.getPlayerInternal()
+            .then((player) => {
             this._player = {
                 get isAuthorized() {
                     return player.getMode() !== 'lite';
@@ -149,6 +150,33 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
                 },
                 get uuid() {
                     return player.getUniqueID();
+                }
+            };
+            return this._player;
+        })
+            .catch(() => {
+            this._player = {
+                get isAuthorized() {
+                    return false;
+                },
+                get hasNamePermission() {
+                    return false;
+                },
+                get hasPhotoPermission() {
+                    return false;
+                },
+                get name() {
+                    return '';
+                },
+                get photo() {
+                    return {
+                        small: '',
+                        medium: '',
+                        large: ''
+                    };
+                },
+                get uuid() {
+                    return '';
                 }
             };
             return this._player;
@@ -210,7 +238,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         this._overridedProductsCatalog.push(...catalog);
     }
     async getProductCatalog() {
-        return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN != null
+        return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN
             ? Promise.resolve(this._overridedProductsCatalog)
             : this.getPayments().then(async (payments) => {
                 const catalog = await payments.getCatalog();
