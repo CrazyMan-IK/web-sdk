@@ -49,7 +49,7 @@ export default class SDK {
         //Localization.locale = lang;
         Localization.locale = sdk.locale;
         await this.getPlayerData();
-        if (window.showAdOnLoading && this._prefs?.ADS_DISABLED) {
+        if (window.showAdOnLoading && !this._prefs?.ADS_DISABLED) {
             this.showInterstitial();
         }
         window.addEventListener('beforeunload', () => {
@@ -226,6 +226,9 @@ export default class SDK {
     }
     static async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {
         return this._sdk.getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf);
+    }
+    static async getFlags(params) {
+        return this._sdk.getFlags(params);
     }
     static async getAllValues() {
         if (!this.isInitialized) {

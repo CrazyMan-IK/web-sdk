@@ -84,6 +84,14 @@ export type LeaderboardEntries = {
   readonly entries: LeaderboardEntry[];
 };
 
+export type FlagsParams = {
+  readonly defaultFlags?: Record<string, string>;
+  readonly clientFeatures?: {
+    readonly name: string;
+    readonly value: string;
+  }[];
+};
+
 export type DeviceInfo = {
   readonly type: string;
   isDesktop: () => boolean;
@@ -155,6 +163,8 @@ export default abstract class SDKWrapper {
     competingPlayersCount?: IntRange<1, 11>,
     includeSelf?: boolean
   ): Promise<LeaderboardEntries>;
+
+  public abstract getFlags(params: FlagsParams): Promise<Record<string, string>>;
 
   public async getPlayerData(keys?: string[]): Promise<Record<string, any>> {
     const data = JSON.parse(getLocalStorageItem('DATA') ?? '{}');

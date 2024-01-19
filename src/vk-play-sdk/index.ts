@@ -11,7 +11,8 @@ import SDKWrapper, {
   LeaderboardEntry,
   RewardedCallbacks,
   CanReviewResponse,
-  ProductMeta
+  ProductMeta,
+  FlagsParams
 } from '../sdk-wrapper';
 import { VKPlaySDK } from './vk-play-sdk-definitions';
 
@@ -652,6 +653,10 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     }
 
     return Promise.resolve(result);
+  }
+
+  public async getFlags(params: FlagsParams): Promise<Record<string, string>> {
+    return params.defaultFlags ?? {};
   }
 
   /* public async getPlayerData(keys: string[] | undefined = undefined): Promise<Record<string, any>> {

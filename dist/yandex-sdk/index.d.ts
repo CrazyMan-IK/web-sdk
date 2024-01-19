@@ -1,9 +1,8 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { Player, DeviceInfo, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
+import SDKWrapper, { Player, DeviceInfo, Purchase, Signature, Product, FlagsParams, LeaderboardEntries, RewardedCallbacks, InterstitialCallbacks, CanReviewResponse } from '../sdk-wrapper';
 import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
 export default class YandexGamesSDKWrapper extends SDKWrapper {
-    private readonly _overridedProductsCatalog;
     private readonly _sdk;
     private readonly _isDraft;
     private _player;
@@ -51,7 +50,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     getPayments(): Promise<Payments>;
     getLeaderboards(): Promise<Leaderboards>;
     getPurchasedProducts(): Promise<Purchase[] & Signature>;
-    overrideProductsCatalog(catalog: Product[]): void;
+    overrideProductsCatalog(): void;
     getProductCatalog(): Promise<Product[]>;
     purchaseProduct(productID: string, developerPayload?: string): Promise<{
         purchaseData: Purchase;
@@ -59,6 +58,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     consumeProduct(purchasedProductToken: string): Promise<void>;
     setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
+    getFlags(params: FlagsParams): Promise<Record<string, string>>;
     getPlayerData(keys?: string[] | undefined): Promise<Record<string, any>>;
     setPlayerData(values: Record<string, any>): Promise<void>;
 }

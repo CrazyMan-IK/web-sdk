@@ -1,5 +1,5 @@
 import { IntRange } from './global';
-import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks, CanReviewResponse } from './sdk-wrapper';
+import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks, CanReviewResponse, FlagsParams } from './sdk-wrapper';
 declare const STATIC_INIT: unique symbol;
 export default abstract class SDK {
     private static readonly _adOpened;
@@ -48,6 +48,7 @@ export default abstract class SDK {
     static consumeProduct(purchasedProductToken: string): Promise<void>;
     static setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     static getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
+    static getFlags(params: FlagsParams): Promise<Record<string, string>>;
     static getAllValues(): Promise<Record<string, any>>;
     static getValues<T extends ([] | string[]) & (number extends T['length'] ? readonly string[] : unknown)>(keys: T, defaultValues: {
         [K in keyof T]: any;

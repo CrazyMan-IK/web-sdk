@@ -481,5 +481,8 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         }
         return Promise.resolve(result);
     }
+    async getFlags(params) {
+        return params.defaultFlags ?? {};
+    }
 }
 //# sourceMappingURL=index.js.map

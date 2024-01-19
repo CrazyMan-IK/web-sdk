@@ -3,13 +3,14 @@ import { Locale } from '../localization';
 import SDKWrapper, {
   Player,
   DeviceInfo,
-  InterstitialCallbacks,
   Purchase,
   Signature,
   Product,
+  FlagsParams,
   LeaderboardEntry,
   LeaderboardEntries,
   RewardedCallbacks,
+  InterstitialCallbacks,
   CanReviewResponse
 } from '../sdk-wrapper';
 import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
@@ -21,7 +22,7 @@ declare const window: {
 } & Window;
 
 export default class YandexGamesSDKWrapper extends SDKWrapper {
-  private readonly _overridedProductsCatalog: Product[] = [];
+  //private readonly _overridedProductsCatalog: Product[] = [];
   private readonly _sdk: YandexGamesSDK;
   private readonly _isDraft: boolean;
 
@@ -115,11 +116,17 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
 
     window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageOpen');
 
-    window.addEventListener('DOMContentLoaded', () => {
+    const domContentLoaded = () => {
       const navigationTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       const pageLoadTime = navigationTiming.domContentLoadedEventStart - navigationTiming.startTime; // performance.timing.domContentLoadedEventStart - performance.timing.navigationStart;
       window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageLoad', { pageLoadTime: pageLoadTime / 1000 });
-    });
+    };
+
+    if (document.readyState !== 'loading') {
+      domContentLoaded();
+    } else {
+      window.addEventListener('DOMContentLoaded', domContentLoaded);
+    }
 
     await this.getPlayer();
 
@@ -300,37 +307,38 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     });
   }
 
-  public overrideProductsCatalog(catalog: Product[]): void {
-    this._overridedProductsCatalog.length = 0;
-    this._overridedProductsCatalog.push(...catalog);
+  public overrideProductsCatalog(/* catalog: Product[] */): void {
+    /* this._overridedProductsCatalog.length = 0;
+    this._overridedProductsCatalog.push(...catalog); */
   }
 
   public async getProductCatalog(): Promise<Product[]> {
-    return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN
+    /* return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN
       ? Promise.resolve(this._overridedProductsCatalog)
-      : this.getPayments().then(async (payments) => {
-          const catalog = await payments.getCatalog();
+      :  */
+    return this.getPayments().then(async (payments) => {
+      const catalog = await payments.getCatalog();
 
-          const result = catalog.map<Product>((x) => ({
-            id: x.id,
-            imageURI: x.imageURI,
-            meta: {
-              en: {
-                name: x.title,
-                description: x.description
-              },
-              ru: {
-                name: x.title,
-                description: x.description
-              }
-            },
-            prices: {
-              YAN: parseFloat(x.priceValue)
-            }
-          }));
+      const result = catalog.map<Product>((x) => ({
+        id: x.id,
+        imageURI: x.imageURI,
+        meta: {
+          en: {
+            name: x.title,
+            description: x.description
+          },
+          ru: {
+            name: x.title,
+            description: x.description
+          }
+        },
+        prices: {
+          YAN: parseFloat(x.priceValue)
+        }
+      }));
 
-          return result;
-        });
+      return result;
+    });
   }
 
   public async purchaseProduct(productID: string, developerPayload?: string): Promise<{ purchaseData: Purchase } & Signature> {
@@ -386,6 +394,10 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
 
       return result;
     });
+  }
+
+  public async getFlags(params: FlagsParams): Promise<Record<string, string>> {
+    return this._sdk.getFlags(params);
   }
 
   public async getPlayerData(keys: string[] | undefined = undefined): Promise<Record<string, any>> {

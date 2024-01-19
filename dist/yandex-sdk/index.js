@@ -1,7 +1,7 @@
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class YandexGamesSDKWrapper extends SDKWrapper {
-    _overridedProductsCatalog = [];
+    //private readonly _overridedProductsCatalog: Product[] = [];
     _sdk;
     _isDraft;
     _player = null;
@@ -78,11 +78,17 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             accurateTrackBounce: true
         });
         window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageOpen');
-        window.addEventListener('DOMContentLoaded', () => {
+        const domContentLoaded = () => {
             const navigationTiming = performance.getEntriesByType('navigation')[0];
             const pageLoadTime = navigationTiming.domContentLoadedEventStart - navigationTiming.startTime; // performance.timing.domContentLoadedEventStart - performance.timing.navigationStart;
             window.ym(window.yandexMetricaCounterId, 'reachGoal', 'pageLoad', { pageLoadTime: pageLoadTime / 1000 });
-        });
+        };
+        if (document.readyState !== 'loading') {
+            domContentLoaded();
+        }
+        else {
+            window.addEventListener('DOMContentLoaded', domContentLoaded);
+        }
         await this.getPlayer();
         /*const leaderboardInitializationPromise = this._sdk
           .getLeaderboards()
@@ -233,34 +239,35 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             return payments.getPurchases();
         });
     }
-    overrideProductsCatalog(catalog) {
-        this._overridedProductsCatalog.length = 0;
-        this._overridedProductsCatalog.push(...catalog);
+    overrideProductsCatalog( /* catalog: Product[] */) {
+        /* this._overridedProductsCatalog.length = 0;
+        this._overridedProductsCatalog.push(...catalog); */
     }
     async getProductCatalog() {
-        return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN
-            ? Promise.resolve(this._overridedProductsCatalog)
-            : this.getPayments().then(async (payments) => {
-                const catalog = await payments.getCatalog();
-                const result = catalog.map((x) => ({
-                    id: x.id,
-                    imageURI: x.imageURI,
-                    meta: {
-                        en: {
-                            name: x.title,
-                            description: x.description
-                        },
-                        ru: {
-                            name: x.title,
-                            description: x.description
-                        }
+        /* return this._overridedProductsCatalog.length > 0 && this._overridedProductsCatalog[0].prices.YAN
+          ? Promise.resolve(this._overridedProductsCatalog)
+          :  */
+        return this.getPayments().then(async (payments) => {
+            const catalog = await payments.getCatalog();
+            const result = catalog.map((x) => ({
+                id: x.id,
+                imageURI: x.imageURI,
+                meta: {
+                    en: {
+                        name: x.title,
+                        description: x.description
                     },
-                    prices: {
-                        YAN: parseFloat(x.priceValue)
+                    ru: {
+                        name: x.title,
+                        description: x.description
                     }
-                }));
-                return result;
-            });
+                },
+                prices: {
+                    YAN: parseFloat(x.priceValue)
+                }
+            }));
+            return result;
+        });
     }
     async purchaseProduct(productID, developerPayload) {
         return this.getPayments().then((payments) => {
@@ -305,6 +312,9 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             };
             return result;
         });
+    }
+    async getFlags(params) {
+        return this._sdk.getFlags(params);
     }
     async getPlayerData(keys = undefined) {
         //if (this._player === null) {

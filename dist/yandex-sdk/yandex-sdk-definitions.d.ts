@@ -1,4 +1,5 @@
 import { IntRange } from '../global';
+import { FlagsParams } from '../sdk-wrapper';
 export type Player = {
     readonly _personalInfo: {
         readonly scopePermissions: {
@@ -161,6 +162,7 @@ export type YandexGamesSDK = {
         };
         readonly payload?: string;
     };
+    getFlags(params: FlagsParams): Promise<Record<string, string>>;
     getPlayer(options?: {
         scopes?: boolean;
         signed?: boolean;

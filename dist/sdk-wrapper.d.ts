@@ -58,6 +58,13 @@ export type LeaderboardEntries = {
     readonly userRank: number;
     readonly entries: LeaderboardEntry[];
 };
+export type FlagsParams = {
+    readonly defaultFlags?: Record<string, string>;
+    readonly clientFeatures?: {
+        readonly name: string;
+        readonly value: string;
+    }[];
+};
 export type DeviceInfo = {
     readonly type: string;
     isDesktop: () => boolean;
@@ -110,6 +117,7 @@ export default abstract class SDKWrapper {
     abstract consumeProduct(purchasedProductToken: string): Promise<void>;
     abstract setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     abstract getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
+    abstract getFlags(params: FlagsParams): Promise<Record<string, string>>;
     getPlayerData(keys?: string[]): Promise<Record<string, any>>;
     setPlayerData(values: Record<string, any>): Promise<void>;
 }

@@ -9,7 +9,8 @@ import SDKWrapper, {
   LeaderboardEntries,
   LeaderboardEntry,
   RewardedCallbacks,
-  CanReviewResponse
+  CanReviewResponse,
+  FlagsParams
 } from '../sdk-wrapper';
 
 export default class DefaultSDKWrapper extends SDKWrapper {
@@ -330,5 +331,9 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     }
 
     return Promise.resolve(result);
+  }
+
+  public async getFlags(params: FlagsParams): Promise<Record<string, string>> {
+    return params.defaultFlags ?? {};
   }
 }

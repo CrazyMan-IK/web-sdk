@@ -1,6 +1,6 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse } from '../sdk-wrapper';
+import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
 export default class VKPlaySDKWrapper extends SDKWrapper {
     private readonly _getLoginStatusCallbackReceived;
     private readonly _registerUserCallbackReceived;
@@ -54,4 +54,5 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     consumeProduct(purchasedProductToken: string): Promise<void>;
     setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
+    getFlags(params: FlagsParams): Promise<Record<string, string>>;
 }

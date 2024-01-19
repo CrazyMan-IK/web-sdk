@@ -10,7 +10,8 @@ import SDKWrapper, {
   DeviceInfo,
   InterstitialCallbacks,
   RewardedCallbacks,
-  CanReviewResponse
+  CanReviewResponse,
+  FlagsParams
 } from './sdk-wrapper';
 import { YandexGamesSDK } from './yandex-sdk/yandex-sdk-definitions';
 
@@ -80,7 +81,7 @@ export default abstract class SDK {
 
     await this.getPlayerData();
 
-    if (window.showAdOnLoading && this._prefs?.ADS_DISABLED) {
+    if (window.showAdOnLoading && !this._prefs?.ADS_DISABLED) {
       this.showInterstitial();
     }
 
@@ -313,6 +314,10 @@ export default abstract class SDK {
     includeSelf?: boolean
   ): Promise<LeaderboardEntries> {
     return this._sdk.getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf);
+  }
+
+  public static async getFlags(params: FlagsParams): Promise<Record<string, string>> {
+    return this._sdk.getFlags(params);
   }
 
   public static async getAllValues(): Promise<Record<string, any>> {
