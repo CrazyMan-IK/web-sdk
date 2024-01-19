@@ -278,7 +278,7 @@ export default class SDK {
             });
         });
     }
-    static async setAllValues(values) {
+    static async setValues(values) {
         if (!this.isInitialized) {
             return;
         }
@@ -296,7 +296,7 @@ export default class SDK {
         }
         this.setPlayerData(this._prefs);
     }
-    static async setValues(values) {
+    static async replaceValues(values) {
         this._prefs = values;
         this.setPlayerData(this._prefs);
     }

@@ -381,7 +381,7 @@ export default abstract class SDK {
       });
   }
 
-  public static async setAllValues(values: Record<string, any>): Promise<void> {
+  public static async setValues(values: Record<string, any>): Promise<void> {
     if (!this.isInitialized) {
       return;
     }
@@ -405,7 +405,7 @@ export default abstract class SDK {
     this.setPlayerData(this._prefs);
   }
 
-  public static async setValues(values: Record<string, any>): Promise<void> {
+  public static async replaceValues(values: Record<string, any>): Promise<void> {
     this._prefs = values;
 
     this.setPlayerData(this._prefs);

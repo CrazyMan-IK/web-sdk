@@ -55,8 +55,8 @@ export default abstract class SDK {
     }): Promise<{
         [K in keyof T]: any;
     }>;
-    static setAllValues(values: Record<string, any>): Promise<void>;
     static setValues(values: Record<string, any>): Promise<void>;
+    static replaceValues(values: Record<string, any>): Promise<void>;
     static removeKeys(keys: string[]): Promise<void>;
     static removeKeyByPredicate(predicate: (key: string) => boolean): Promise<void>;
     private static getPlayerData;
