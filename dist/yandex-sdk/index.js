@@ -126,7 +126,10 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             .catch(() => false);
     }
     async authorizePlayer() {
-        return this._sdk.auth.openAuthDialog();
+        return this._sdk.auth.openAuthDialog().then(async () => {
+            this._yplayer = null;
+            await this.getPlayerInternal();
+        });
     }
     async getPlayer() {
         if (this._player !== null) {
