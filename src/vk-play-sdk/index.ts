@@ -617,7 +617,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     competingPlayersCount ??= 5;
     for (let i = competingPlayersCount; i > 0; i--) {
       const entry: LeaderboardEntry = {
-        score: Math.random() * 1000 + 1000 * i,
+        score: Math.round(Math.random() * 1000 + 1000 * i),
         extraData: '',
         rank: competingPlayersCount - i + 1,
 

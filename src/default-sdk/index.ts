@@ -295,7 +295,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     const me = includeSelf ? Math.floor(Math.random() * competingPlayersCount + 1) : -1;
     for (let i = competingPlayersCount; i > 0; i--) {
       const entry: LeaderboardEntry = {
-        score: Math.random() * 1000 + 1000 * i,
+        score: Math.round(Math.random() * 1000 + 1000 * i),
         extraData: '',
         rank: competingPlayersCount - i + 1,
 
