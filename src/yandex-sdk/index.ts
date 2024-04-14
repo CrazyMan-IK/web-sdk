@@ -39,6 +39,10 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     this._isDraft = location.hash.search('draft=true') >= 0;
   }
 
+  public get canShowAdOnLoading(): boolean {
+    return true;
+  }
+
   public get locale(): Locale {
     let result = Locale.Russian;
 

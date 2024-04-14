@@ -24,6 +24,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     private _playerInfo;
     private _isAuthorized;
     constructor();
+    get canShowAdOnLoading(): boolean;
     get locale(): Locale;
     get lang(): string;
     get tld(): string;

@@ -81,8 +81,12 @@ export default abstract class SDK {
 
     await this.getPlayerData();
 
-    if (window.showAdOnLoading && !this._prefs?.ADS_DISABLED) {
-      this.showInterstitial();
+    if (this._sdk.canShowAdOnLoading && window.showAdOnLoading && !this._prefs?.ADS_DISABLED) {
+      this.getFlags({ defaultFlags: { ad_show_startup: 'true' } }).then((values) => {
+        if (values['ad_show_startup'] == 'true') {
+          this.showInterstitial();
+        }
+      });
     }
 
     window.addEventListener('beforeunload', () => {
@@ -213,6 +217,18 @@ export default abstract class SDK {
 
   public static async isMe(uniqueID: string): Promise<boolean> {
     return this._sdk.isMe(uniqueID);
+  }
+
+  public static gameplayStart(): void {
+    this._sdk.gameplayStart();
+  }
+
+  public static gameplayStop(): void {
+    this._sdk.gameplayStop();
+  }
+
+  public static happyTime(): void {
+    this._sdk.happyTime();
   }
 
   public static async authorizePlayer(): Promise<void> {
@@ -455,6 +471,21 @@ export default abstract class SDK {
     this.removeKeys(keys);
   }
 
+  public static forceSaveChanges() {
+    if (this._settingTimeout) {
+      const data = this._nextData ?? this._prefs;
+      if (!data) {
+        return;
+      }
+
+      this._nextData = undefined;
+
+      clearTimeout(this._settingTimeout);
+
+      this._settingPromise = this.setPlayerDataRuntime(data);
+    }
+  }
+
   /*public static async tryRequestReview(): Promise<boolean> {}
 
   private static async showAdEditor(): Promise<void> {}
@@ -623,6 +654,16 @@ const isInitialized = (() => {
 
       return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
     });
+
+    return true;
+  }
+  match = location.hostname.match(/game-files\.crazygames\.com/);
+  if (match || location.href.search('platform=CrazyGames')) {
+    (async () => {
+      const CrazyGamesSDKWrapper = (await import('./crazy-games-sdk')).default;
+
+      return SDK[STATIC_INIT](new CrazyGamesSDKWrapper());
+    })();
 
     return true;
   }

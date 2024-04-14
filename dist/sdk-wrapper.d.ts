@@ -87,6 +87,7 @@ export type CanReviewResponse = {
     reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN';
 };
 export default abstract class SDKWrapper {
+    abstract get canShowAdOnLoading(): boolean;
     abstract get locale(): Locale;
     abstract get lang(): string;
     abstract get tld(): string;

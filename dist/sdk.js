@@ -49,8 +49,12 @@ export default class SDK {
         //Localization.locale = lang;
         Localization.locale = sdk.locale;
         await this.getPlayerData();
-        if (window.showAdOnLoading && !this._prefs?.ADS_DISABLED) {
-            this.showInterstitial();
+        if (this._sdk.canShowAdOnLoading && window.showAdOnLoading && !this._prefs?.ADS_DISABLED) {
+            this.getFlags({ defaultFlags: { ad_show_startup: 'true' } }).then((values) => {
+                if (values['ad_show_startup'] == 'true') {
+                    this.showInterstitial();
+                }
+            });
         }
         window.addEventListener('beforeunload', () => {
             if (!this._prefs) {
@@ -150,6 +154,15 @@ export default class SDK {
     }
     static async isMe(uniqueID) {
         return this._sdk.isMe(uniqueID);
+    }
+    static gameplayStart() {
+        this._sdk.gameplayStart();
+    }
+    static gameplayStop() {
+        this._sdk.gameplayStop();
+    }
+    static happyTime() {
+        this._sdk.happyTime();
     }
     static async authorizePlayer() {
         return this._sdk.authorizePlayer();
@@ -332,6 +345,17 @@ export default class SDK {
         const keys = Object.keys(this._prefs).filter(predicate);
         this.removeKeys(keys);
     }
+    static forceSaveChanges() {
+        if (this._settingTimeout) {
+            const data = this._nextData ?? this._prefs;
+            if (!data) {
+                return;
+            }
+            this._nextData = undefined;
+            clearTimeout(this._settingTimeout);
+            this._settingPromise = this.setPlayerDataRuntime(data);
+        }
+    }
     /*public static async tryRequestReview(): Promise<boolean> {}
   
     private static async showAdEditor(): Promise<void> {}
@@ -469,6 +493,14 @@ const isInitialized = (() => {
             const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
             return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
         });
+        return true;
+    }
+    match = location.hostname.match(/game-files\.crazygames\.com/);
+    if (match || location.href.search('platform=CrazyGames')) {
+        (async () => {
+            const CrazyGamesSDKWrapper = (await import('./crazy-games-sdk')).default;
+            return SDK[STATIC_INIT](new CrazyGamesSDKWrapper());
+        })();
         return true;
     }
     match = location.href.match(/appid=(\d+)/);

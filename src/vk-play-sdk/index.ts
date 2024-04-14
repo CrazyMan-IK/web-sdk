@@ -188,6 +188,10 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     };
   }
 
+  public get canShowAdOnLoading(): boolean {
+    return true;
+  }
+
   public get locale(): Locale {
     let result = Locale.Russian;
 

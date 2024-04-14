@@ -9,6 +9,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     private readonly _isDraft;
     private _isAuthorized;
     constructor();
+    get canShowAdOnLoading(): boolean;
     get locale(): Locale;
     get lang(): string;
     get tld(): string;

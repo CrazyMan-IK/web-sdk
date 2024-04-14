@@ -30,6 +30,9 @@ export default abstract class SDK {
     static waitInitialization(): Promise<void>;
     static ready(): void;
     static isMe(uniqueID: string): Promise<boolean>;
+    static gameplayStart(): void;
+    static gameplayStop(): void;
+    static happyTime(): void;
     static authorizePlayer(): Promise<void>;
     static getPlayer(): Promise<Player>;
     static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
@@ -59,6 +62,7 @@ export default abstract class SDK {
     static replaceValues(values: Record<string, any>): Promise<void>;
     static removeKeys(keys: string[]): Promise<void>;
     static removeKeyByPredicate(predicate: (key: string) => boolean): Promise<void>;
+    static forceSaveChanges(): void;
     private static getPlayerData;
     private static onDataGetted;
     private static setPlayerData;

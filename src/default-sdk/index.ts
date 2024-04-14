@@ -32,6 +32,10 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     this._isDraft = urlParams.get('draft') === 'true';
   }
 
+  public get canShowAdOnLoading(): boolean {
+    return true;
+  }
+
   public get locale(): Locale {
     let result = Locale.Russian;
 
