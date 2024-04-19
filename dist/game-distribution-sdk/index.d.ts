@@ -1,0 +1,48 @@
+import { IntRange } from '../global';
+import { Locale } from '../localization';
+import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
+export default class GameDistributionSDKWrapper extends SDKWrapper {
+    private readonly _adErrorReceived;
+    private readonly _gamePauseReceived;
+    private readonly _gameStartReceived;
+    private readonly _rewardedRewardReceived;
+    private readonly _overridedProductsCatalog;
+    private readonly _isDraft;
+    private readonly _appID;
+    private readonly _lang;
+    private readonly _options;
+    private _player;
+    private _sdk;
+    private _isAuthorized;
+    constructor(appID: string);
+    get canShowAdOnLoading(): boolean;
+    get locale(): Locale;
+    get lang(): string;
+    get tld(): string;
+    get id(): string;
+    get isAuthorized(): boolean;
+    get isDraft(): boolean;
+    initialize(): Promise<void>;
+    ready(): void;
+    gameplayStart(): void;
+    gameplayStop(): void;
+    happyTime(): void;
+    isMe(uniqueID: string): Promise<boolean>;
+    authorizePlayer(): Promise<void>;
+    getPlayer(): Promise<Player>;
+    sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
+    showInterstitial(callbacks?: InterstitialCallbacks): void;
+    showRewarded(callbacks?: RewardedCallbacks): void;
+    canReview(): Promise<CanReviewResponse>;
+    requestReview(): Promise<{
+        feedbackSent: boolean;
+    }>;
+    getPurchasedProducts(): Promise<Purchase[] & Signature>;
+    overrideProductsCatalog(catalog: Product[]): void;
+    getProductCatalog(): Promise<Product[]>;
+    purchaseProduct(productID: string, developerPayload?: string): Promise<never>;
+    consumeProduct(purchasedProductToken: string): Promise<void>;
+    setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
+    getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
+    getFlags(params: FlagsParams): Promise<Record<string, string>>;
+}

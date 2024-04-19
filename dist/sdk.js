@@ -511,6 +511,14 @@ const isInitialized = (() => {
         })();
         return true;
     }
+    match = location.href.match(/gamedistribution\.com\/(?:.+\/)?(.{32})/);
+    if (match || location.href.search('platform=GameDistribution')) {
+        (async () => {
+            const GameDistributionSDKWrapper = (await import('./game-distribution-sdk')).default;
+            return SDK[STATIC_INIT](new GameDistributionSDKWrapper(match?.[1] ?? ''));
+        })();
+        return true;
+    }
     return false;
 })();
 if (!isInitialized) {
