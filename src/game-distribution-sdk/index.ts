@@ -1,5 +1,5 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
-import { IntRange } from '../global';
+import { IntRange, keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, {
   Player,
@@ -111,7 +111,7 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
       gameId: this._appID,
 
       onEvent: (event) => {
-        console.log(`${GameDistributionSDKWrapper.name} received native sdk event: `, event);
+        console.log(`${keyof({ GameDistributionSDKWrapper })} received native sdk event: `, event);
 
         switch (event.name) {
           case 'AD_ERROR':
