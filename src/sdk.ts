@@ -658,7 +658,7 @@ const isInitialized = (() => {
     return true;
   }
   match = location.hostname.match(/game-files\.crazygames\.com/);
-  if (match || location.href.search('platform=CrazyGames')) {
+  if (match || location.href.search('platform=CrazyGames') >= 0) {
     (async () => {
       const CrazyGamesSDKWrapper = (await import('./crazy-games-sdk')).default;
 
@@ -668,7 +668,7 @@ const isInitialized = (() => {
     return true;
   }
   match = location.href.match(/appid=(\d+)/);
-  if (match && location.href.search('platform=VKPlay')) {
+  if (match && location.href.search('platform=VKPlay') >= 0) {
     (async () => {
       const VKPlaySDKWrapper = (await import('./vk-play-sdk')).default;
 
@@ -678,7 +678,7 @@ const isInitialized = (() => {
     return true;
   }
   match = location.href.match(/gamedistribution\.com\/(?:.+\/)?(.{32})/);
-  if (match || location.href.search('platform=GameDistribution')) {
+  if (match || location.href.search('platform=GameDistribution') >= 0) {
     (async () => {
       const GameDistributionSDKWrapper = (await import('./game-distribution-sdk')).default;
 
