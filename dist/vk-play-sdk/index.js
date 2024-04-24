@@ -1,4 +1,5 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
+import { keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class VKPlaySDKWrapper extends SDKWrapper {
@@ -14,6 +15,12 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     _userProfileCallbackReceived = new SimpleEventDispatcher();
     _userFriendsCallbackReceived = new SimpleEventDispatcher();
     _userSocialFriendsCallbackReceived = new SimpleEventDispatcher();
+    _adErrorReceived = new SimpleEventDispatcher();
+    _adStartedReceived = new SimpleEventDispatcher();
+    _adCompletedReceived = new SimpleEventDispatcher();
+    _gamePauseReceived = new SimpleEventDispatcher();
+    _gameStartReceived = new SimpleEventDispatcher();
+    _rewardedRewardReceived = new SimpleEventDispatcher();
     _overridedProductsCatalog = [];
     _isDraft;
     _appID;
@@ -24,7 +31,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
     _playerInfo = null;
     _isAuthorized = false;
     constructor() {
-        super();
+        super(keyof({ VKPlaySDKWrapper }));
         //https://astetrio.github.io/web-games/draft/alchemy-elements/index.html?appid=32200&lang=ru_RU&currency=RUB&status=1&version=1
         const urlParams = new URL(location.href).searchParams;
         this._isDraft = location.href.startsWith('https://astetrio.github.io/web-games/draft/');
@@ -34,7 +41,7 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
             appid: this._appID,
             getLoginStatusCallback: (status) => {
                 this._getLoginStatusCallbackReceived.dispatch(status);
-                console.log(`getLoginStatusCallback(${JSON.stringify(status)})`);
+                this.log(`getLoginStatusCallback(${JSON.stringify(status)})`);
             },
             registerUserCallback: (info) => {
                 if (info.status == 'ok') {
@@ -42,11 +49,11 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     this._playerInfo = info;
                 }
                 this._registerUserCallbackReceived.dispatch(info);
-                console.log(`registerUserCallback(${JSON.stringify(info)})`);
+                this.log(`registerUserCallback(${JSON.stringify(info)})`);
             },
             getAuthTokenCallback: (token) => {
                 this._getAuthTokenCallbackReceived.dispatch(token);
-                console.log(`getAuthTokenCallback(${JSON.stringify(token)})`);
+                this.log(`getAuthTokenCallback(${JSON.stringify(token)})`);
             },
             userInfoCallback: (info) => {
                 if (info.status == 'ok') {
@@ -54,48 +61,75 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
                     this._playerInfo = info;
                 }
                 this._userInfoCallbackReceived.dispatch(info);
-                console.log(`userInfoCallback(${JSON.stringify(info)})`);
+                this.log(`userInfoCallback(${JSON.stringify(info)})`);
             },
             adsCallback: (context) => {
                 this._adsCallbackReceived.dispatch(context);
-                console.log(`adsCallback(${JSON.stringify(context)})`);
+                if (context.type == 'adError') {
+                    this._adErrorReceived.dispatch(new Error(context.code));
+                }
+                let isAdShowed = false;
+                if (context.type == 'adCompleted') {
+                    this._rewardedRewardReceived.dispatch();
+                    isAdShowed = true;
+                }
+                setTimeout(() => {
+                    this._adCompletedReceived.dispatch(isAdShowed);
+                    this._gameStartReceived.dispatch();
+                }, 1000);
+                this.log(`adsCallback(${JSON.stringify(context)})`);
             },
             paymentWaitCallback: (data) => {
-                console.log(`paymentWaitCallback(${JSON.stringify(data)})`);
+                this.log(`paymentWaitCallback(${JSON.stringify(data)})`);
             },
             paymentReceivedCallback: (data) => {
                 this._paymentCompletedCallbackReceived.dispatch({ status: 'received', uid: data.uid });
-                console.log(`paymentReceivedCallback(${JSON.stringify(data)})`);
+                this.log(`paymentReceivedCallback(${JSON.stringify(data)})`);
             },
             paymentWindowClosedCallback: () => {
                 this._paymentCompletedCallbackReceived.dispatch({ status: 'closed' });
-                console.log('paymentWindowClosedCallback');
+                this.log('paymentWindowClosedCallback');
             },
             confirmWindowClosedCallback: () => {
                 this._confirmWindowClosedCallbackReceived.dispatch();
-                console.log('confirmWindowClosedCallback');
+                this.log('confirmWindowClosedCallback');
             },
             userConfirmCallback: () => {
                 this._userConfirmCallbackReceived.dispatch();
-                console.log('userConfirmCallback');
+                this.log('userConfirmCallback');
             },
             getGameInventoryItems: () => {
                 this._getGameInventoryItemsReceived.dispatch();
-                console.log('getGameInventoryItems');
+                this.log('getGameInventoryItems');
             },
             userProfileCallback: (profile) => {
                 this._userProfileCallbackReceived.dispatch(profile);
-                console.log(`userProfileCallback(${JSON.stringify(profile)})`);
+                this.log(`userProfileCallback(${JSON.stringify(profile)})`);
             },
             userFriendsCallback: (data) => {
                 this._userFriendsCallbackReceived.dispatch(data);
-                console.log(`userFriendsCallback(${JSON.stringify(data)})`);
+                this.log(`userFriendsCallback(${JSON.stringify(data)})`);
             },
             userSocialFriendsCallback: (data) => {
                 this._userSocialFriendsCallbackReceived.dispatch(data);
-                console.log(`userSocialFriendsCallback(${JSON.stringify(data)})`);
+                this.log(`userSocialFriendsCallback(${JSON.stringify(data)})`);
             }
         };
+    }
+    get contentPauseRequested() {
+        return this._gamePauseReceived.asEvent();
+    }
+    get contentContinueRequested() {
+        return this._gameStartReceived.asEvent();
+    }
+    get adOpened() {
+        return this._adStartedReceived.asEvent();
+    }
+    get adClosed() {
+        return this._adCompletedReceived.asEvent();
+    }
+    get rewardedRewardReceived() {
+        return this._rewardedRewardReceived.asEvent();
     }
     get canShowAdOnLoading() {
         return true;
@@ -157,16 +191,16 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         });
     }
     ready() {
-        console.log('Ready');
+        this.log('Ready');
     }
     gameplayStart() {
-        console.log('Gameplay Start');
+        this.log('Gameplay Start');
     }
     gameplayStop() {
-        console.log('Gameplay Stop');
+        this.log('Gameplay Stop');
     }
     happyTime() {
-        console.log('Happy Time');
+        this.log('Happy Time');
     }
     async isMe(uniqueID) {
         if (this._playerInfo == null) {
@@ -279,36 +313,46 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         });
     }
     sendAnalyticsEvent(eventName, data) {
-        console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
+        this.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
     }
-    showInterstitial(callbacks) {
-        this._adsCallbackReceived.one((context) => {
-            if (context.type == 'adError') {
-                callbacks?.onError?.(new Error(context.code));
-            }
-            const isAdShowed = context.type == 'adCompleted';
-            setTimeout(() => {
-                callbacks?.onClose?.(isAdShowed);
-            }, 1000);
+    showInterstitial( /* callbacks?: InterstitialCallbacks */) {
+        /* this._adsCallbackReceived.one((context) => {
+          if (context.type == 'adError') {
+            callbacks?.onError?.(new Error(context.code));
+          }
+    
+          const isAdShowed = context.type == 'adCompleted';
+          setTimeout(() => {
+            callbacks?.onClose?.(isAdShowed);
+          }, 1000);
         });
-        callbacks?.onOpen?.();
+    
+        callbacks?.onOpen?.(); */
+        this._gamePauseReceived.dispatch();
+        this._adStartedReceived.dispatch();
         this._sdk?.showAds({ interstitial: true });
     }
-    showRewarded(callbacks) {
-        this._adsCallbackReceived.one((context) => {
-            if (context.type == 'adError') {
-                callbacks?.onError?.(new Error(context.code));
-            }
-            let isAdShowed = false;
-            if (context.type == 'adCompleted') {
-                callbacks?.onRewarded?.();
-                isAdShowed = true;
-            }
-            setTimeout(() => {
-                callbacks?.onClose?.(isAdShowed);
-            }, 1000);
+    showRewarded( /* callbacks?: RewardedCallbacks */) {
+        /* this._adsCallbackReceived.one((context) => {
+          if (context.type == 'adError') {
+            callbacks?.onError?.(new Error(context.code));
+          }
+    
+          let isAdShowed = false;
+          if (context.type == 'adCompleted') {
+            callbacks?.onRewarded?.();
+    
+            isAdShowed = true;
+          }
+    
+          setTimeout(() => {
+            callbacks?.onClose?.(isAdShowed);
+          }, 1000);
         });
-        callbacks?.onOpen?.();
+    
+        callbacks?.onOpen?.(); */
+        this._gamePauseReceived.dispatch();
+        this._adStartedReceived.dispatch();
         this._sdk?.showAds({ interstitial: false });
     }
     async canReview() {
@@ -422,11 +466,11 @@ export default class VKPlaySDKWrapper extends SDKWrapper {
         });
     }
     async consumeProduct(purchasedProductToken) {
-        console.log(`Product with token (${purchasedProductToken}) consumed`);
+        this.log(`Product with token (${purchasedProductToken}) consumed`);
         return Promise.resolve();
     }
     async setLeaderboardScore(leaderboardName, score, extraData) {
-        console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
+        this.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
         return Promise.resolve();
     }
     async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {

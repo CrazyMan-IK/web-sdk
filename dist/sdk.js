@@ -2,8 +2,8 @@ import { SimpleEventDispatcher } from 'ste-simple-events';
 import Localization from './localization';
 const STATIC_INIT = Symbol();
 export default class SDK {
-    static _adOpened = new SimpleEventDispatcher();
-    static _adClosed = new SimpleEventDispatcher();
+    static _contentPauseRequested = new SimpleEventDispatcher();
+    static _contentContinueRequested = new SimpleEventDispatcher();
     static _initialized = new SimpleEventDispatcher();
     static _rewardedAdReward = new SimpleEventDispatcher();
     static _sdk;
@@ -11,6 +11,7 @@ export default class SDK {
     static _settingPromise = undefined;
     static _settingTimeout = undefined;
     static _nextData = undefined;
+    static _currentRewardedID = '';
     static _isInitialized = false;
     static _isGettingData = false;
     static _isAdOpened = false;
@@ -26,7 +27,12 @@ export default class SDK {
             return;
         }
         this._sdk = sdk;
-        await sdk.initialize();
+        await this._sdk.initialize();
+        this._sdk.contentPauseRequested.subscribe(this._contentPauseRequested.dispatch.bind(this._contentPauseRequested));
+        this._sdk.contentContinueRequested.subscribe(this._contentContinueRequested.dispatch.bind(this._contentContinueRequested));
+        this._sdk.adOpened.subscribe(this.onAdOpened.bind(this));
+        this._sdk.adClosed.subscribe(this.onAdClosed.bind(this));
+        this._sdk.rewardedRewardReceived.subscribe(this.onRewardedRewardReceived.bind(this));
         /*let lang = YandexGamesSdk.Environment.i18n.lang;
         switch (lang) {
           case 'ru':
@@ -47,7 +53,7 @@ export default class SDK {
             break;
         }*/
         //Localization.locale = lang;
-        Localization.locale = sdk.locale;
+        Localization.locale = this._sdk.locale;
         await this.getPlayerData();
         if (this._sdk.canShowAdOnLoading && window.showAdOnLoading && !this._prefs?.ADS_DISABLED) {
             this.getFlags({ defaultFlags: { ad_show_startup: 'true' } }).then((values) => {
@@ -106,11 +112,11 @@ export default class SDK {
           this._adClosed.dispatch();
         }*/
     }
-    static get adOpened() {
-        return this._adOpened.asEvent();
+    static get contentPauseRequested() {
+        return this._contentPauseRequested.asEvent();
     }
-    static get adClosed() {
-        return this._adClosed.asEvent();
+    static get contentContinueRequested() {
+        return this._contentContinueRequested.asEvent();
     }
     static get rewardedAdReward() {
         return this._rewardedAdReward.asEvent();
@@ -137,16 +143,27 @@ export default class SDK {
         return this._isAdOpened;
     }
     static async waitInitialization() {
+        if (this._isInitialized) {
+            return Promise.resolve();
+        }
         const promise = new Promise((resolve) => {
-            const loop = () => {
-                if (this._isInitialized) {
-                    resolve();
-                    return;
-                }
-                setTimeout(loop, 50);
-            };
-            loop();
+            this._initialized.one(() => {
+                resolve();
+            });
         });
+        /* const promise = new Promise<void>((resolve) => {
+          const loop = () => {
+            if (this._isInitialized) {
+              resolve();
+    
+              return;
+            }
+    
+            setTimeout(loop, 50);
+          };
+    
+          loop();
+        }); */
         return promise;
     }
     static ready() {
@@ -173,45 +190,55 @@ export default class SDK {
     static sendAnalyticsEvent(eventName, data) {
         this._sdk.sendAnalyticsEvent(eventName, data);
     }
-    static async showInterstitial(callbacks) {
-        if (this._isAdOpened) {
-            return;
-        }
-        this._sdk.showInterstitial({
-            onOpen: () => {
-                this._isAdOpened = true;
-                callbacks?.onOpen?.();
-                this._adOpened.dispatch();
-            },
-            onClose: (wasShown) => {
-                this._isAdOpened = false;
-                callbacks?.onClose?.(wasShown);
-                this._adClosed.dispatch();
-            },
-            onError: callbacks?.onError
-        });
+    static requestAdPreload(adType) {
+        //this._sdk.tryRequestAdPreload
     }
-    static async showRewarded(id, callbacks) {
+    static showInterstitial() {
         if (this._isAdOpened) {
-            return;
+            return false;
         }
-        this._sdk.showRewarded({
-            onOpen: () => {
-                this._isAdOpened = true;
-                callbacks?.onOpen?.();
-                this._adOpened.dispatch();
-            },
-            onRewarded: () => {
-                callbacks?.onRewarded?.();
-                this._rewardedAdReward.dispatch(id);
-            },
-            onClose: (wasShown) => {
-                this._isAdOpened = false;
-                callbacks?.onClose?.(wasShown);
-                this._adClosed.dispatch();
-            },
-            onError: callbacks?.onError
-        });
+        this._sdk.showInterstitial( /* {
+          onOpen: () => {
+            this._isAdOpened = true;
+    
+            callbacks?.onOpen?.();
+            this._adOpened.dispatch();
+          },
+          onClose: (wasShown) => {
+            this._isAdOpened = false;
+    
+            callbacks?.onClose?.(wasShown);
+            this._adClosed.dispatch();
+          },
+          onError: callbacks?.onError
+        } */);
+        return true;
+    }
+    static showRewarded(id) {
+        if (this._isAdOpened) {
+            return false;
+        }
+        this._currentRewardedID = id;
+        this._sdk.showRewarded( /* {
+          onOpen: () => {
+            this._isAdOpened = true;
+    
+            callbacks?.onOpen?.();
+            this._adOpened.dispatch();
+          },
+          onRewarded: () => {
+            callbacks?.onRewarded?.();
+            this._rewardedAdReward.dispatch(id);
+          },
+          onClose: (wasShown) => {
+            this._isAdOpened = false;
+    
+            callbacks?.onClose?.(wasShown);
+            this._adClosed.dispatch();
+          },
+          onError: callbacks?.onError
+        } */);
+        return true;
     }
     static async canReview() {
         return this._sdk.canReview();
@@ -291,7 +318,7 @@ export default class SDK {
             });
         });
     }
-    static async setValues(values) {
+    static setValues(values) {
         if (!this.isInitialized) {
             return;
         }
@@ -482,6 +509,16 @@ export default class SDK {
             this.setPlayerData(data);
         }
     }
+    static onAdOpened() {
+        this._isAdOpened = true;
+    }
+    static onAdClosed() {
+        this._isAdOpened = false;
+    }
+    static onRewardedRewardReceived() {
+        this._rewardedAdReward.dispatch(this._currentRewardedID);
+        this._currentRewardedID = '';
+    }
 }
 const isInitialized = (() => {
     let match = location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/);
@@ -489,10 +526,15 @@ const isInitialized = (() => {
         match = decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.(.+)&draft=true/);
     }
     if (match) {
-        window.YaGames.init().then(async (sdk) => {
+        /* (window as any).YaGames.init().then(async (sdk: YandexGamesSDK) => {
+          const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
+    
+          return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
+        }); */
+        (async () => {
             const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
-            return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
-        });
+            return SDK[STATIC_INIT](new YandexGamesSDKWrapper());
+        })();
         return true;
     }
     match = location.hostname.match(/game-files\.crazygames\.com/);

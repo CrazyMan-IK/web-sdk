@@ -1,9 +1,9 @@
 import { IntRange } from './global';
-import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, DeviceInfo, InterstitialCallbacks, RewardedCallbacks, CanReviewResponse, FlagsParams } from './sdk-wrapper';
+import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, DeviceInfo, CanReviewResponse, FlagsParams } from './sdk-wrapper';
 declare const STATIC_INIT: unique symbol;
 export default abstract class SDK {
-    private static readonly _adOpened;
-    private static readonly _adClosed;
+    private static readonly _contentPauseRequested;
+    private static readonly _contentContinueRequested;
     private static readonly _initialized;
     private static readonly _rewardedAdReward;
     private static _sdk;
@@ -11,14 +11,15 @@ export default abstract class SDK {
     private static _settingPromise?;
     private static _settingTimeout?;
     private static _nextData?;
+    private static _currentRewardedID;
     private static _isInitialized;
     private static _isGettingData;
     private static _isAdOpened;
     private static _gettings;
     private static readonly _settingDataCooldown;
     static [STATIC_INIT](sdk: SDKWrapper): Promise<void>;
-    static get adOpened(): import("ste-simple-events").ISimpleEvent<void>;
-    static get adClosed(): import("ste-simple-events").ISimpleEvent<void>;
+    static get contentPauseRequested(): import("ste-simple-events").ISimpleEvent<void>;
+    static get contentContinueRequested(): import("ste-simple-events").ISimpleEvent<void>;
     static get rewardedAdReward(): import("ste-simple-events").ISimpleEvent<string>;
     static get isAuthorized(): boolean;
     static get tld(): string;
@@ -36,8 +37,9 @@ export default abstract class SDK {
     static authorizePlayer(): Promise<void>;
     static getPlayer(): Promise<Player>;
     static sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
-    static showInterstitial(callbacks?: InterstitialCallbacks): Promise<void>;
-    static showRewarded(id: string, callbacks?: RewardedCallbacks): Promise<void>;
+    static requestAdPreload(adType: 'interstitial' | 'rewarded'): void;
+    static showInterstitial(): boolean;
+    static showRewarded(id: string): boolean;
     static canReview(): Promise<CanReviewResponse>;
     static requestReview(): Promise<{
         feedbackSent: boolean;
@@ -58,7 +60,7 @@ export default abstract class SDK {
     }): Promise<{
         [K in keyof T]: any;
     }>;
-    static setValues(values: Record<string, any>): Promise<void>;
+    static setValues(values: Record<string, any>): void;
     static replaceValues(values: Record<string, any>): Promise<void>;
     static removeKeys(keys: string[]): Promise<void>;
     static removeKeyByPredicate(predicate: (key: string) => boolean): Promise<void>;
@@ -67,5 +69,8 @@ export default abstract class SDK {
     private static onDataGetted;
     private static setPlayerData;
     private static setPlayerDataRuntime;
+    private static onAdOpened;
+    private static onAdClosed;
+    private static onRewardedRewardReceived;
 }
 export {};

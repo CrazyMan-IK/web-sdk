@@ -13,6 +13,9 @@ function setPauseState(state) {
         _stateChanged.dispatch(_isPaused);
     }
 }
+function getIsPaused() {
+    return _isPaused;
+}
 function updateState() {
     if (!_isAdShow && !_inBackground) {
         setPauseState(false);
@@ -34,7 +37,7 @@ function onAdClosed() {
     updateState();
 }
 document.addEventListener('visibilitychange', onDocumentVisibilityChanged);
-SDK.adOpened.subscribe(onAdOpened);
-SDK.adClosed.subscribe(onAdClosed);
-export { stateChanged, documentVisibilityChanged };
+SDK.contentPauseRequested.subscribe(onAdOpened);
+SDK.contentContinueRequested.subscribe(onAdClosed);
+export { stateChanged, getIsPaused, documentVisibilityChanged };
 //# sourceMappingURL=game-pause.js.map

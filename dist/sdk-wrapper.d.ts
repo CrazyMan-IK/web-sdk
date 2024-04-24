@@ -1,3 +1,4 @@
+import { ISimpleEvent } from 'ste-simple-events';
 import { IntRange } from './global';
 import { Locale } from './localization';
 export type Player = {
@@ -87,6 +88,13 @@ export type CanReviewResponse = {
     reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN';
 };
 export default abstract class SDKWrapper {
+    private readonly _logName;
+    protected constructor(logName: string);
+    abstract get contentPauseRequested(): ISimpleEvent<void>;
+    abstract get contentContinueRequested(): ISimpleEvent<void>;
+    abstract get adOpened(): ISimpleEvent<void>;
+    abstract get adClosed(): ISimpleEvent<boolean>;
+    abstract get rewardedRewardReceived(): ISimpleEvent<void>;
     abstract get canShowAdOnLoading(): boolean;
     abstract get locale(): Locale;
     abstract get lang(): string;
@@ -103,8 +111,8 @@ export default abstract class SDKWrapper {
     abstract authorizePlayer(): Promise<void>;
     abstract getPlayer(): Promise<Player>;
     abstract sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
-    abstract showInterstitial(callbacks?: InterstitialCallbacks): void;
-    abstract showRewarded(callbacks?: RewardedCallbacks): void;
+    abstract showInterstitial(): void;
+    abstract showRewarded(): void;
     abstract canReview(): Promise<CanReviewResponse>;
     abstract requestReview(): Promise<{
         feedbackSent: boolean;
@@ -121,4 +129,5 @@ export default abstract class SDKWrapper {
     abstract getFlags(params: FlagsParams): Promise<Record<string, string>>;
     getPlayerData(keys?: string[]): Promise<Record<string, any>>;
     setPlayerData(values: Record<string, any>): Promise<void>;
+    protected log(...message: any): void;
 }

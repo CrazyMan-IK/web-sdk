@@ -1,3 +1,4 @@
+import { ISimpleEvent } from 'ste-simple-events';
 import { IntRange } from './global';
 import { Locale } from './localization';
 
@@ -115,6 +116,18 @@ export type CanReviewResponse =
   | { value: false; reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN' };
 
 export default abstract class SDKWrapper {
+  private readonly _logName: string = '';
+
+  protected constructor(logName: string) {
+    this._logName = logName;
+  }
+
+  public abstract get contentPauseRequested(): ISimpleEvent<void>;
+  public abstract get contentContinueRequested(): ISimpleEvent<void>;
+  public abstract get adOpened(): ISimpleEvent<void>;
+  public abstract get adClosed(): ISimpleEvent<boolean>;
+  public abstract get rewardedRewardReceived(): ISimpleEvent<void>;
+
   public abstract get canShowAdOnLoading(): boolean;
   public abstract get locale(): Locale;
   public abstract get lang(): string;
@@ -145,8 +158,8 @@ export default abstract class SDKWrapper {
 
   public abstract sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
 
-  public abstract showInterstitial(callbacks?: InterstitialCallbacks): void;
-  public abstract showRewarded(callbacks?: RewardedCallbacks): void;
+  public abstract showInterstitial(): void;
+  public abstract showRewarded(): void;
 
   public abstract canReview(): Promise<CanReviewResponse>;
   public abstract requestReview(): Promise<{ feedbackSent: boolean }>;
@@ -185,5 +198,12 @@ export default abstract class SDKWrapper {
 
   public async setPlayerData(values: Record<string, any>): Promise<void> {
     setLocalStorageItem('DATA', JSON.stringify(values));
+  }
+
+  protected log(...message: any): void {
+    const style =
+      'background: wheat; color: #1E324B; font-family: tahoma, verdana, helvetica, arial; font-size: 14px; font-weight: 900; text-align: center; padding: 6px 2px; border-radius: 6px; border: 2px solid #434975';
+
+    console.log(`%c[${this._logName}]:`, style, ...message);
   }
 }

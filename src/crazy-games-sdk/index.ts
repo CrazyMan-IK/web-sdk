@@ -1,5 +1,5 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
-import { IntRange } from '../global';
+import { IntRange, keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, {
   Player,
@@ -23,6 +23,13 @@ declare const window: {
 } & Window;
 
 export default class CrazyGamesSDKWrapper extends SDKWrapper {
+  private readonly _adErrorReceived: SimpleEventDispatcher<Error> = new SimpleEventDispatcher();
+  private readonly _adStartedReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _adCompletedReceived: SimpleEventDispatcher<boolean> = new SimpleEventDispatcher();
+  private readonly _gamePauseReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _gameStartReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _rewardedRewardReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+
   private readonly _overridedProductsCatalog: Product[] = [];
   private readonly _isDraft: boolean;
 
@@ -35,9 +42,25 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
   private _lang: string = 'EN';
 
   public constructor() {
-    super();
+    super(keyof({ CrazyGamesSDKWrapper }));
 
     this._isDraft = location.href.startsWith('https://prod-dpgames.crazygames.com/');
+  }
+
+  public get contentPauseRequested() {
+    return this._gamePauseReceived.asEvent();
+  }
+  public get contentContinueRequested() {
+    return this._gameStartReceived.asEvent();
+  }
+  public get adOpened() {
+    return this._adStartedReceived.asEvent();
+  }
+  public get adClosed() {
+    return this._adCompletedReceived.asEvent();
+  }
+  public get rewardedRewardReceived() {
+    return this._rewardedRewardReceived.asEvent();
   }
 
   public get canShowAdOnLoading(): boolean {
@@ -323,38 +346,49 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
   }
 
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void {
-    console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
+    this.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
   }
 
-  public showInterstitial(callbacks?: InterstitialCallbacks): void {
+  public showInterstitial(/* callbacks?: InterstitialCallbacks */): void {
     let isAdShowed = true;
     this._sdk?.ad.requestAd('midgame', {
       adStarted: () => {
-        callbacks?.onOpen?.();
+        //callbacks?.onOpen?.();
+        this._gamePauseReceived.dispatch();
+        this._adStartedReceived.dispatch();
       },
       adError: (error, errorData) => {
         isAdShowed = false;
-        callbacks?.onError?.(new Error(error));
+        //callbacks?.onError?.(new Error(error));
+        this._adErrorReceived.dispatch(new Error(error));
       },
       adFinished: () => {
-        callbacks?.onClose?.(isAdShowed);
+        //callbacks?.onClose?.(isAdShowed);
+        this._adCompletedReceived.dispatch(isAdShowed);
+        this._gameStartReceived.dispatch();
       }
     });
   }
 
-  public showRewarded(callbacks?: RewardedCallbacks): void {
+  public showRewarded(/* callbacks?: RewardedCallbacks */): void {
     let isAdShowed = true;
     this._sdk?.ad.requestAd('rewarded', {
       adStarted: () => {
-        callbacks?.onOpen?.();
+        //callbacks?.onOpen?.();
+        this._gamePauseReceived.dispatch();
+        this._adStartedReceived.dispatch();
       },
       adError: (error, errorData) => {
         isAdShowed = false;
-        callbacks?.onError?.(new Error(error));
+        //callbacks?.onError?.(new Error(error));
+        this._adErrorReceived.dispatch(new Error(error));
       },
       adFinished: () => {
-        callbacks?.onRewarded?.();
-        callbacks?.onClose?.(isAdShowed);
+        //callbacks?.onRewarded?.();
+        //callbacks?.onClose?.(isAdShowed);
+        this._rewardedRewardReceived.dispatch();
+        this._adCompletedReceived.dispatch(isAdShowed);
+        this._gameStartReceived.dispatch();
       }
     });
   }
@@ -430,13 +464,13 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
   }
 
   public async consumeProduct(purchasedProductToken: string): Promise<void> {
-    console.log(`Product with token (${purchasedProductToken}) consumed`);
+    this.log(`Product with token (${purchasedProductToken}) consumed`);
 
     return Promise.resolve();
   }
 
   public async setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void> {
-    console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
+    this.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
 
     return Promise.resolve();
   }

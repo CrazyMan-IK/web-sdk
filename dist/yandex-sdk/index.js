@@ -1,18 +1,42 @@
+import { SimpleEventDispatcher } from 'ste-simple-events';
+import { keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class YandexGamesSDKWrapper extends SDKWrapper {
+    _adErrorReceived = new SimpleEventDispatcher();
+    _adStartedReceived = new SimpleEventDispatcher();
+    _adCompletedReceived = new SimpleEventDispatcher();
+    _gamePauseReceived = new SimpleEventDispatcher();
+    _gameStartReceived = new SimpleEventDispatcher();
+    _rewardedRewardReceived = new SimpleEventDispatcher();
     //private readonly _overridedProductsCatalog: Product[] = [];
-    _sdk;
     _isDraft;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    _sdk = null;
     _player = null;
     _yplayer = null;
     _payments = null;
     _leaderboards = null;
     _isAuthorized = false;
-    constructor(sdk) {
-        super();
-        this._sdk = sdk;
+    constructor( /* sdk: YandexGamesSDK */) {
+        super(keyof({ YandexGamesSDKWrapper }));
+        //this._sdk = sdk;
         this._isDraft = location.hash.search('draft=true') >= 0;
+    }
+    get contentPauseRequested() {
+        return this._gamePauseReceived.asEvent();
+    }
+    get contentContinueRequested() {
+        return this._gameStartReceived.asEvent();
+    }
+    get adOpened() {
+        return this._adStartedReceived.asEvent();
+    }
+    get adClosed() {
+        return this._adCompletedReceived.asEvent();
+    }
+    get rewardedRewardReceived() {
+        return this._rewardedRewardReceived.asEvent();
     }
     get canShowAdOnLoading() {
         return true;
@@ -92,6 +116,17 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         else {
             window.addEventListener('DOMContentLoaded', domContentLoaded);
         }
+        const script = document.createElement('script');
+        script.src = 'https://yandex.ru/games/sdk/v2';
+        document.head.appendChild(script);
+        await new Promise((resolve) => {
+            script.addEventListener('load', () => {
+                window.YaGames.init().then(async (sdk) => {
+                    this._sdk = sdk;
+                    resolve();
+                });
+            });
+        });
         await this.getPlayer();
         /*const leaderboardInitializationPromise = this._sdk
           .getLeaderboards()
@@ -115,13 +150,13 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
         this._sdk.features.LoadingAPI?.ready();
     }
     gameplayStart() {
-        console.log('Gameplay Start');
+        this.log('Gameplay Start');
     }
     gameplayStop() {
-        console.log('Gameplay Stop');
+        this.log('Gameplay Stop');
     }
     happyTime() {
-        console.log('Happy Time');
+        this.log('Happy Time');
     }
     async isMe(uniqueID) {
         return this.getPlayer()
@@ -197,11 +232,44 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     sendAnalyticsEvent(eventName, data) {
         window.ym(window.yandexMetricaCounterId, 'reachGoal', eventName, data);
     }
-    showInterstitial(callbacks) {
-        this._sdk.adv.showFullscreenAdv({ callbacks });
+    showInterstitial( /* callbacks?: InterstitialCallbacks */) {
+        //this._sdk.adv.showFullscreenAdv({ callback });
+        this._sdk.adv.showFullscreenAdv({
+            callbacks: {
+                onOpen: () => {
+                    this._gamePauseReceived.dispatch();
+                    this._adStartedReceived.dispatch();
+                },
+                onClose: (wasShown) => {
+                    this._adCompletedReceived.dispatch(wasShown);
+                    this._gameStartReceived.dispatch();
+                },
+                onError: (error) => {
+                    this._adErrorReceived.dispatch(error);
+                }
+            }
+        });
     }
-    showRewarded(callbacks) {
-        this._sdk.adv.showRewardedVideo({ callbacks });
+    showRewarded( /* callbacks?: RewardedCallbacks */) {
+        //this._sdk.adv.showRewardedVideo({ callbacks });
+        this._sdk.adv.showRewardedVideo({
+            callbacks: {
+                onOpen: () => {
+                    this._gamePauseReceived.dispatch();
+                    this._adStartedReceived.dispatch();
+                },
+                onRewarded: () => {
+                    this._rewardedRewardReceived.dispatch();
+                },
+                onClose: (wasShown) => {
+                    this._adCompletedReceived.dispatch(wasShown);
+                    this._gameStartReceived.dispatch();
+                },
+                onError: (error) => {
+                    this._adErrorReceived.dispatch(error);
+                }
+            }
+        });
     }
     async canReview() {
         return this._sdk.feedback.canReview();

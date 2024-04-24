@@ -1,6 +1,14 @@
+import { SimpleEventDispatcher } from 'ste-simple-events';
+import { keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class CrazyGamesSDKWrapper extends SDKWrapper {
+    _adErrorReceived = new SimpleEventDispatcher();
+    _adStartedReceived = new SimpleEventDispatcher();
+    _adCompletedReceived = new SimpleEventDispatcher();
+    _gamePauseReceived = new SimpleEventDispatcher();
+    _gameStartReceived = new SimpleEventDispatcher();
+    _rewardedRewardReceived = new SimpleEventDispatcher();
     _overridedProductsCatalog = [];
     _isDraft;
     _player = null;
@@ -11,8 +19,23 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     _appID = '0';
     _lang = 'EN';
     constructor() {
-        super();
+        super(keyof({ CrazyGamesSDKWrapper }));
         this._isDraft = location.href.startsWith('https://prod-dpgames.crazygames.com/');
+    }
+    get contentPauseRequested() {
+        return this._gamePauseReceived.asEvent();
+    }
+    get contentContinueRequested() {
+        return this._gameStartReceived.asEvent();
+    }
+    get adOpened() {
+        return this._adStartedReceived.asEvent();
+    }
+    get adClosed() {
+        return this._adCompletedReceived.asEvent();
+    }
+    get rewardedRewardReceived() {
+        return this._rewardedRewardReceived.asEvent();
     }
     get canShowAdOnLoading() {
         return false;
@@ -265,36 +288,47 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
         }); */
     }
     sendAnalyticsEvent(eventName, data) {
-        console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
+        this.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
     }
-    showInterstitial(callbacks) {
+    showInterstitial( /* callbacks?: InterstitialCallbacks */) {
         let isAdShowed = true;
         this._sdk?.ad.requestAd('midgame', {
             adStarted: () => {
-                callbacks?.onOpen?.();
+                //callbacks?.onOpen?.();
+                this._gamePauseReceived.dispatch();
+                this._adStartedReceived.dispatch();
             },
             adError: (error, errorData) => {
                 isAdShowed = false;
-                callbacks?.onError?.(new Error(error));
+                //callbacks?.onError?.(new Error(error));
+                this._adErrorReceived.dispatch(new Error(error));
             },
             adFinished: () => {
-                callbacks?.onClose?.(isAdShowed);
+                //callbacks?.onClose?.(isAdShowed);
+                this._adCompletedReceived.dispatch(isAdShowed);
+                this._gameStartReceived.dispatch();
             }
         });
     }
-    showRewarded(callbacks) {
+    showRewarded( /* callbacks?: RewardedCallbacks */) {
         let isAdShowed = true;
         this._sdk?.ad.requestAd('rewarded', {
             adStarted: () => {
-                callbacks?.onOpen?.();
+                //callbacks?.onOpen?.();
+                this._gamePauseReceived.dispatch();
+                this._adStartedReceived.dispatch();
             },
             adError: (error, errorData) => {
                 isAdShowed = false;
-                callbacks?.onError?.(new Error(error));
+                //callbacks?.onError?.(new Error(error));
+                this._adErrorReceived.dispatch(new Error(error));
             },
             adFinished: () => {
-                callbacks?.onRewarded?.();
-                callbacks?.onClose?.(isAdShowed);
+                //callbacks?.onRewarded?.();
+                //callbacks?.onClose?.(isAdShowed);
+                this._rewardedRewardReceived.dispatch();
+                this._adCompletedReceived.dispatch(isAdShowed);
+                this._gameStartReceived.dispatch();
             }
         });
     }
@@ -361,11 +395,11 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
         return Promise.reject();
     }
     async consumeProduct(purchasedProductToken) {
-        console.log(`Product with token (${purchasedProductToken}) consumed`);
+        this.log(`Product with token (${purchasedProductToken}) consumed`);
         return Promise.resolve();
     }
     async setLeaderboardScore(leaderboardName, score, extraData) {
-        console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
+        this.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
         return Promise.resolve();
     }
     async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {

@@ -3,6 +3,9 @@ import { Locale } from '../localization';
 import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
 export default class GameDistributionSDKWrapper extends SDKWrapper {
     private readonly _adErrorReceived;
+    private readonly _adStartedReceived;
+    private readonly _adCompletedReceived;
+    private readonly _sdkReadyReceived;
     private readonly _gamePauseReceived;
     private readonly _gameStartReceived;
     private readonly _rewardedRewardReceived;
@@ -15,6 +18,11 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
     private _sdk;
     private _isAuthorized;
     constructor(appID: string);
+    get contentPauseRequested(): import("ste-simple-events").ISimpleEvent<void>;
+    get contentContinueRequested(): import("ste-simple-events").ISimpleEvent<void>;
+    get adOpened(): import("ste-simple-events").ISimpleEvent<void>;
+    get adClosed(): import("ste-simple-events").ISimpleEvent<boolean>;
+    get rewardedRewardReceived(): import("ste-simple-events").ISimpleEvent<void>;
     get canShowAdOnLoading(): boolean;
     get locale(): Locale;
     get lang(): string;

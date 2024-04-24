@@ -1,14 +1,24 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
+import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
     static readonly UniquePlayerID: string;
+    private readonly _adStartedReceived;
+    private readonly _adCompletedReceived;
+    private readonly _gamePauseReceived;
+    private readonly _gameStartReceived;
+    private readonly _rewardedRewardReceived;
     private readonly _overridedProductsCatalog;
     private readonly _lang;
     private readonly _tld;
     private readonly _isDraft;
     private _isAuthorized;
     constructor();
+    get contentPauseRequested(): import("ste-simple-events").ISimpleEvent<void>;
+    get contentContinueRequested(): import("ste-simple-events").ISimpleEvent<void>;
+    get adOpened(): import("ste-simple-events").ISimpleEvent<void>;
+    get adClosed(): import("ste-simple-events").ISimpleEvent<boolean>;
+    get rewardedRewardReceived(): import("ste-simple-events").ISimpleEvent<void>;
     get canShowAdOnLoading(): boolean;
     get locale(): Locale;
     get lang(): string;
@@ -24,8 +34,8 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     authorizePlayer(): Promise<void>;
     getPlayer(): Promise<Player>;
     sendAnalyticsEvent(eventName: string, data?: Record<string, any> | undefined): void;
-    showInterstitial(callbacks?: InterstitialCallbacks): void;
-    showRewarded(callbacks?: RewardedCallbacks): void;
+    showInterstitial(): void;
+    showRewarded(): void;
     canReview(): Promise<CanReviewResponse>;
     requestReview(): Promise<{
         feedbackSent: boolean;

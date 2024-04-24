@@ -1,16 +1,27 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { Player, DeviceInfo, Purchase, Signature, Product, FlagsParams, LeaderboardEntries, RewardedCallbacks, InterstitialCallbacks, CanReviewResponse } from '../sdk-wrapper';
-import { YandexGamesSDK, Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
+import SDKWrapper, { Player, DeviceInfo, Purchase, Signature, Product, FlagsParams, LeaderboardEntries, CanReviewResponse } from '../sdk-wrapper';
+import { Player as YPlayer, Payments, Leaderboards } from './yandex-sdk-definitions';
 export default class YandexGamesSDKWrapper extends SDKWrapper {
-    private readonly _sdk;
+    private readonly _adErrorReceived;
+    private readonly _adStartedReceived;
+    private readonly _adCompletedReceived;
+    private readonly _gamePauseReceived;
+    private readonly _gameStartReceived;
+    private readonly _rewardedRewardReceived;
     private readonly _isDraft;
+    private _sdk;
     private _player;
     private _yplayer;
     private _payments;
     private _leaderboards;
     private _isAuthorized;
-    constructor(sdk: YandexGamesSDK);
+    constructor();
+    get contentPauseRequested(): import("ste-simple-events").ISimpleEvent<void>;
+    get contentContinueRequested(): import("ste-simple-events").ISimpleEvent<void>;
+    get adOpened(): import("ste-simple-events").ISimpleEvent<void>;
+    get adClosed(): import("ste-simple-events").ISimpleEvent<boolean>;
+    get rewardedRewardReceived(): import("ste-simple-events").ISimpleEvent<void>;
     get canShowAdOnLoading(): boolean;
     get locale(): Locale;
     get lang(): string;
@@ -41,8 +52,8 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     authorizePlayer(): Promise<void>;
     getPlayer(): Promise<Player>;
     sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
-    showInterstitial(callbacks?: InterstitialCallbacks): void;
-    showRewarded(callbacks?: RewardedCallbacks): void;
+    showInterstitial(): void;
+    showRewarded(): void;
     canReview(): Promise<CanReviewResponse>;
     requestReview(): Promise<{
         feedbackSent: boolean;

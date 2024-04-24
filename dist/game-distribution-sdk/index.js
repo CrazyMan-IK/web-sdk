@@ -4,6 +4,9 @@ import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class GameDistributionSDKWrapper extends SDKWrapper {
     _adErrorReceived = new SimpleEventDispatcher();
+    _adStartedReceived = new SimpleEventDispatcher();
+    _adCompletedReceived = new SimpleEventDispatcher();
+    _sdkReadyReceived = new SimpleEventDispatcher();
     _gamePauseReceived = new SimpleEventDispatcher();
     _gameStartReceived = new SimpleEventDispatcher();
     _rewardedRewardReceived = new SimpleEventDispatcher();
@@ -16,7 +19,7 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
     _sdk = null;
     _isAuthorized = false;
     constructor(appID) {
-        super();
+        super(keyof({ GameDistributionSDKWrapper }));
         //https://revision.gamedistribution.com/765220aabfd34362b969a612682949e8/
         //https://html5.gamedistribution.com/rvvASMiM/282636e45a99479897f4cc6dae83e27b/index.html
         //https://html5.gamedistribution.com/1253e3f36b984801811d744f4db1125d/
@@ -24,14 +27,23 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
         //https://html5.gamedistribution.com/rvvASMiM/264b40aeb81246f59a19310cde99bdcd/index.html
         this._isDraft = location.href.startsWith('https://revision.gamedistribution.com/');
         this._appID = appID;
-        this._lang = 'en_US';
+        this._lang = navigator.language;
         this._options = {
             gameId: this._appID,
             onEvent: (event) => {
-                console.log(`${keyof({ GameDistributionSDKWrapper })} received native sdk event: `, event);
+                this.log(`received native sdk event: `, event);
                 switch (event.name) {
                     case 'AD_ERROR':
-                        this._adErrorReceived.dispatch();
+                        this._adErrorReceived.dispatch(new Error(event.message));
+                        break;
+                    case 'STARTED':
+                        this._adStartedReceived.dispatch();
+                        break;
+                    case 'COMPLETE':
+                        this._adCompletedReceived.dispatch(true);
+                        break;
+                    case 'SDK_READY':
+                        this._sdkReadyReceived.dispatch();
                         break;
                     case 'SDK_GAME_PAUSE':
                         this._gamePauseReceived.dispatch();
@@ -47,8 +59,23 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
         };
         window.GD_OPTIONS = this._options;
     }
+    get contentPauseRequested() {
+        return this._gamePauseReceived.asEvent();
+    }
+    get contentContinueRequested() {
+        return this._gameStartReceived.asEvent();
+    }
+    get adOpened() {
+        return this._adStartedReceived.asEvent();
+    }
+    get adClosed() {
+        return this._adCompletedReceived.asEvent();
+    }
+    get rewardedRewardReceived() {
+        return this._rewardedRewardReceived.asEvent();
+    }
     get canShowAdOnLoading() {
-        return true;
+        return false;
     }
     get locale() {
         let result = Locale.Russian;
@@ -93,23 +120,23 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
         script.src = 'https://html5.api.gamedistribution.com/main.min.js';
         document.head.appendChild(script);
         return new Promise((resolve) => {
-            script.addEventListener('load', () => {
+            this._sdkReadyReceived.one(() => {
                 this._sdk = window.gdsdk;
                 resolve();
             });
         });
     }
     ready() {
-        console.log('Ready');
+        this.log('Ready');
     }
     gameplayStart() {
-        console.log('Gameplay Start');
+        this.log('Gameplay Start');
     }
     gameplayStop() {
-        console.log('Gameplay Stop');
+        this.log('Gameplay Stop');
     }
     happyTime() {
-        console.log('Happy Time');
+        this.log('Happy Time');
     }
     async isMe(uniqueID) {
         if (this._player == null) {
@@ -164,7 +191,7 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
         return Promise.resolve(this._player);
     }
     sendAnalyticsEvent(eventName, data) {
-        console.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
+        this.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
         if (eventName == 'track-milestone' && data != null && 'isAuthorized' in data && 'milestoneDescription' in data) {
             this._sdk?.sendEvent({
                 eventName,
@@ -221,11 +248,11 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
         return Promise.reject();
     }
     async consumeProduct(purchasedProductToken) {
-        console.log(`Product with token (${purchasedProductToken}) consumed`);
+        this.log(`Product with token (${purchasedProductToken}) consumed`);
         return Promise.resolve();
     }
     async setLeaderboardScore(leaderboardName, score, extraData) {
-        console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
+        this.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
         return Promise.resolve();
     }
     async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {

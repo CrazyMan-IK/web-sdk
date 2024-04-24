@@ -16,6 +16,10 @@ function setPauseState(state: boolean): void {
   }
 }
 
+function getIsPaused(): boolean {
+  return _isPaused;
+}
+
 function updateState(): void {
   if (!_isAdShow && !_inBackground) {
     setPauseState(false);
@@ -47,7 +51,7 @@ function onAdClosed(): void {
 }
 
 document.addEventListener('visibilitychange', onDocumentVisibilityChanged);
-SDK.adOpened.subscribe(onAdOpened);
-SDK.adClosed.subscribe(onAdClosed);
+SDK.contentPauseRequested.subscribe(onAdOpened);
+SDK.contentContinueRequested.subscribe(onAdClosed);
 
-export { stateChanged, documentVisibilityChanged };
+export { stateChanged, getIsPaused, documentVisibilityChanged };

@@ -1,18 +1,41 @@
+import { SimpleEventDispatcher } from 'ste-simple-events';
+import { keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
 export default class DefaultSDKWrapper extends SDKWrapper {
     static UniquePlayerID = 'UniquePlayerID';
+    //private readonly _adErrorReceived: SimpleEventDispatcher<Error> = new SimpleEventDispatcher();
+    _adStartedReceived = new SimpleEventDispatcher();
+    _adCompletedReceived = new SimpleEventDispatcher();
+    _gamePauseReceived = new SimpleEventDispatcher();
+    _gameStartReceived = new SimpleEventDispatcher();
+    _rewardedRewardReceived = new SimpleEventDispatcher();
     _overridedProductsCatalog = [];
     _lang;
     _tld;
     _isDraft;
     _isAuthorized = false;
     constructor() {
-        super();
+        super(keyof({ DefaultSDKWrapper }));
         const urlParams = new URL(location.href).searchParams;
         this._lang = urlParams.get('lang') ?? 'ru';
         this._tld = urlParams.get('tld') ?? 'ru';
         this._isDraft = urlParams.get('draft') === 'true';
+    }
+    get contentPauseRequested() {
+        return this._gamePauseReceived.asEvent();
+    }
+    get contentContinueRequested() {
+        return this._gameStartReceived.asEvent();
+    }
+    get adOpened() {
+        return this._adStartedReceived.asEvent();
+    }
+    get adClosed() {
+        return this._adCompletedReceived.asEvent();
+    }
+    get rewardedRewardReceived() {
+        return this._rewardedRewardReceived.asEvent();
     }
     get canShowAdOnLoading() {
         return true;
@@ -109,16 +132,16 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         return Promise.resolve();
     }
     ready() {
-        console.log('Ready');
+        this.log('Ready');
     }
     gameplayStart() {
-        console.log('Gameplay Start');
+        this.log('Gameplay Start');
     }
     gameplayStop() {
-        console.log('Gameplay Stop');
+        this.log('Gameplay Stop');
     }
     happyTime() {
-        console.log('Happy Time');
+        this.log('Happy Time');
     }
     async isMe(uniqueID) {
         return uniqueID == DefaultSDKWrapper.UniquePlayerID;
@@ -156,18 +179,27 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         return Promise.resolve(player);
     }
     sendAnalyticsEvent(eventName, data) {
-        console.log(`Analytic event sended (${eventName}) with data: ${data}`);
+        this.log(`Analytic event sended (${eventName}) with data: ${data}`);
     }
-    showInterstitial(callbacks) {
-        callbacks?.onOpen?.();
-        callbacks?.onClose?.(true);
-        console.log('Interstitial Showed');
+    showInterstitial( /* callbacks?: InterstitialCallbacks */) {
+        /* callbacks?.onOpen?.();
+        callbacks?.onClose?.(true); */
+        this._gamePauseReceived.dispatch();
+        this._adStartedReceived.dispatch();
+        this._adCompletedReceived.dispatch(true);
+        this._gameStartReceived.dispatch();
+        this.log('Interstitial Showed');
     }
-    showRewarded(callbacks) {
-        callbacks?.onOpen?.();
+    showRewarded( /* callbacks?: RewardedCallbacks */) {
+        /* callbacks?.onOpen?.();
         callbacks?.onRewarded?.();
-        callbacks?.onClose?.(true);
-        console.log('Rewarded Showed');
+        callbacks?.onClose?.(true); */
+        this._gamePauseReceived.dispatch();
+        this._adStartedReceived.dispatch();
+        this._rewardedRewardReceived.dispatch();
+        this._adCompletedReceived.dispatch(true);
+        this._gameStartReceived.dispatch();
+        this.log('Rewarded Showed');
     }
     async canReview() {
         const value = Math.round(Math.random()) != 0;
@@ -175,7 +207,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         return Promise.resolve(result);
     }
     async requestReview() {
-        console.log('Review requested');
+        this.log('Review requested');
         return Promise.resolve({ feedbackSent: Math.round(Math.random()) != 0 });
     }
     async getPurchasedProducts() {
@@ -202,11 +234,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         });
     }
     async consumeProduct(purchasedProductToken) {
-        console.log(`Product with token (${purchasedProductToken}) consumed`);
+        this.log(`Product with token (${purchasedProductToken}) consumed`);
         return Promise.resolve();
     }
     async setLeaderboardScore(leaderboardName, score, extraData) {
-        console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
+        this.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
         return Promise.resolve();
     }
     async getLeaderboardEntries(leaderboardName, topPlayersCount, competingPlayersCount, includeSelf) {

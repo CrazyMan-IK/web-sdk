@@ -23,8 +23,8 @@ declare const window: {
 } & Window;
 
 export default abstract class SDK {
-  private static readonly _adOpened: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
-  private static readonly _adClosed: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private static readonly _contentPauseRequested: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private static readonly _contentContinueRequested: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
   private static readonly _initialized: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
   private static readonly _rewardedAdReward: SimpleEventDispatcher<string> = new SimpleEventDispatcher();
 
@@ -34,6 +34,7 @@ export default abstract class SDK {
   private static _settingPromise?: Promise<void> = undefined;
   private static _settingTimeout?: NodeJS.Timeout = undefined;
   private static _nextData?: Record<string, any> = undefined;
+  private static _currentRewardedID: string = '';
   private static _isInitialized: boolean = false;
   private static _isGettingData: boolean = false;
   private static _isAdOpened: boolean = false;
@@ -54,7 +55,13 @@ export default abstract class SDK {
 
     this._sdk = sdk;
 
-    await sdk.initialize();
+    await this._sdk.initialize();
+
+    this._sdk.contentPauseRequested.subscribe(this._contentPauseRequested.dispatch.bind(this._contentPauseRequested));
+    this._sdk.contentContinueRequested.subscribe(this._contentContinueRequested.dispatch.bind(this._contentContinueRequested));
+    this._sdk.adOpened.subscribe(this.onAdOpened.bind(this));
+    this._sdk.adClosed.subscribe(this.onAdClosed.bind(this));
+    this._sdk.rewardedRewardReceived.subscribe(this.onRewardedRewardReceived.bind(this));
 
     /*let lang = YandexGamesSdk.Environment.i18n.lang;
     switch (lang) {
@@ -77,7 +84,7 @@ export default abstract class SDK {
     }*/
 
     //Localization.locale = lang;
-    Localization.locale = sdk.locale;
+    Localization.locale = this._sdk.locale;
 
     await this.getPlayerData();
 
@@ -153,12 +160,12 @@ export default abstract class SDK {
     }*/
   }
 
-  public static get adOpened() {
-    return this._adOpened.asEvent();
+  public static get contentPauseRequested() {
+    return this._contentPauseRequested.asEvent();
   }
 
-  public static get adClosed() {
-    return this._adClosed.asEvent();
+  public static get contentContinueRequested() {
+    return this._contentContinueRequested.asEvent();
   }
 
   public static get rewardedAdReward() {
@@ -194,7 +201,17 @@ export default abstract class SDK {
   }
 
   public static async waitInitialization(): Promise<void> {
+    if (this._isInitialized) {
+      return Promise.resolve();
+    }
+
     const promise = new Promise<void>((resolve) => {
+      this._initialized.one(() => {
+        resolve();
+      });
+    });
+
+    /* const promise = new Promise<void>((resolve) => {
       const loop = () => {
         if (this._isInitialized) {
           resolve();
@@ -206,7 +223,7 @@ export default abstract class SDK {
       };
 
       loop();
-    });
+    }); */
 
     return promise;
   }
@@ -243,12 +260,16 @@ export default abstract class SDK {
     this._sdk.sendAnalyticsEvent(eventName, data);
   }
 
-  public static async showInterstitial(callbacks?: InterstitialCallbacks): Promise<void> {
+  public static requestAdPreload(adType: 'interstitial' | 'rewarded'): void {
+    //this._sdk.tryRequestAdPreload
+  }
+
+  public static showInterstitial(): boolean {
     if (this._isAdOpened) {
-      return;
+      return false;
     }
 
-    this._sdk.showInterstitial({
+    this._sdk.showInterstitial(/* {
       onOpen: () => {
         this._isAdOpened = true;
 
@@ -262,15 +283,19 @@ export default abstract class SDK {
         this._adClosed.dispatch();
       },
       onError: callbacks?.onError
-    });
+    } */);
+
+    return true;
   }
 
-  public static async showRewarded(id: string, callbacks?: RewardedCallbacks): Promise<void> {
+  public static showRewarded(id: string): boolean {
     if (this._isAdOpened) {
-      return;
+      return false;
     }
 
-    this._sdk.showRewarded({
+    this._currentRewardedID = id;
+
+    this._sdk.showRewarded(/* {
       onOpen: () => {
         this._isAdOpened = true;
 
@@ -288,7 +313,9 @@ export default abstract class SDK {
         this._adClosed.dispatch();
       },
       onError: callbacks?.onError
-    });
+    } */);
+
+    return true;
   }
 
   public static async canReview(): Promise<CanReviewResponse> {
@@ -397,7 +424,7 @@ export default abstract class SDK {
       });
   }
 
-  public static async setValues(values: Record<string, any>): Promise<void> {
+  public static setValues(values: Record<string, any>): void {
     if (!this.isInitialized) {
       return;
     }
@@ -641,6 +668,20 @@ export default abstract class SDK {
       this.setPlayerData(data);
     }
   }
+
+  private static onAdOpened(): void {
+    this._isAdOpened = true;
+  }
+
+  private static onAdClosed(): void {
+    this._isAdOpened = false;
+  }
+
+  private static onRewardedRewardReceived(): void {
+    this._rewardedAdReward.dispatch(this._currentRewardedID);
+
+    this._currentRewardedID = '';
+  }
 }
 
 const isInitialized = (() => {
@@ -649,11 +690,16 @@ const isInitialized = (() => {
     match = decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.(.+)&draft=true/);
   }
   if (match) {
-    (window as any).YaGames.init().then(async (sdk: YandexGamesSDK) => {
+    /* (window as any).YaGames.init().then(async (sdk: YandexGamesSDK) => {
       const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
 
       return SDK[STATIC_INIT](new YandexGamesSDKWrapper(sdk));
-    });
+    }); */
+    (async () => {
+      const YandexGamesSDKWrapper = (await import('./yandex-sdk')).default;
+
+      return SDK[STATIC_INIT](new YandexGamesSDKWrapper());
+    })();
 
     return true;
   }

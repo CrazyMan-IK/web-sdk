@@ -1,4 +1,5 @@
-import { IntRange } from '../global';
+import { SimpleEventDispatcher } from 'ste-simple-events';
+import { IntRange, keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper, {
   Player,
@@ -16,6 +17,13 @@ import SDKWrapper, {
 export default class DefaultSDKWrapper extends SDKWrapper {
   public static readonly UniquePlayerID: string = 'UniquePlayerID';
 
+  //private readonly _adErrorReceived: SimpleEventDispatcher<Error> = new SimpleEventDispatcher();
+  private readonly _adStartedReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _adCompletedReceived: SimpleEventDispatcher<boolean> = new SimpleEventDispatcher();
+  private readonly _gamePauseReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _gameStartReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+  private readonly _rewardedRewardReceived: SimpleEventDispatcher<void> = new SimpleEventDispatcher();
+
   private readonly _overridedProductsCatalog: Product[] = [];
   private readonly _lang: string;
   private readonly _tld: string;
@@ -23,13 +31,29 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   private _isAuthorized: boolean = false;
 
   public constructor() {
-    super();
+    super(keyof({ DefaultSDKWrapper }));
 
     const urlParams = new URL(location.href).searchParams;
 
     this._lang = urlParams.get('lang') ?? 'ru';
     this._tld = urlParams.get('tld') ?? 'ru';
     this._isDraft = urlParams.get('draft') === 'true';
+  }
+
+  public get contentPauseRequested() {
+    return this._gamePauseReceived.asEvent();
+  }
+  public get contentContinueRequested() {
+    return this._gameStartReceived.asEvent();
+  }
+  public get adOpened() {
+    return this._adStartedReceived.asEvent();
+  }
+  public get adClosed() {
+    return this._adCompletedReceived.asEvent();
+  }
+  public get rewardedRewardReceived() {
+    return this._rewardedRewardReceived.asEvent();
   }
 
   public get canShowAdOnLoading(): boolean {
@@ -140,19 +164,19 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public ready(): void {
-    console.log('Ready');
+    this.log('Ready');
   }
 
   public gameplayStart(): void {
-    console.log('Gameplay Start');
+    this.log('Gameplay Start');
   }
 
   public gameplayStop(): void {
-    console.log('Gameplay Stop');
+    this.log('Gameplay Stop');
   }
 
   public happyTime(): void {
-    console.log('Happy Time');
+    this.log('Happy Time');
   }
 
   public async isMe(uniqueID: string): Promise<boolean> {
@@ -196,22 +220,33 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public sendAnalyticsEvent(eventName: string, data?: Record<string, any> | undefined): void {
-    console.log(`Analytic event sended (${eventName}) with data: ${data}`);
+    this.log(`Analytic event sended (${eventName}) with data: ${data}`);
   }
 
-  public showInterstitial(callbacks?: InterstitialCallbacks): void {
-    callbacks?.onOpen?.();
-    callbacks?.onClose?.(true);
+  public showInterstitial(/* callbacks?: InterstitialCallbacks */): void {
+    /* callbacks?.onOpen?.();
+    callbacks?.onClose?.(true); */
 
-    console.log('Interstitial Showed');
+    this._gamePauseReceived.dispatch();
+    this._adStartedReceived.dispatch();
+    this._adCompletedReceived.dispatch(true);
+    this._gameStartReceived.dispatch();
+
+    this.log('Interstitial Showed');
   }
 
-  public showRewarded(callbacks?: RewardedCallbacks): void {
-    callbacks?.onOpen?.();
+  public showRewarded(/* callbacks?: RewardedCallbacks */): void {
+    /* callbacks?.onOpen?.();
     callbacks?.onRewarded?.();
-    callbacks?.onClose?.(true);
+    callbacks?.onClose?.(true); */
 
-    console.log('Rewarded Showed');
+    this._gamePauseReceived.dispatch();
+    this._adStartedReceived.dispatch();
+    this._rewardedRewardReceived.dispatch();
+    this._adCompletedReceived.dispatch(true);
+    this._gameStartReceived.dispatch();
+
+    this.log('Rewarded Showed');
   }
 
   public async canReview(): Promise<CanReviewResponse> {
@@ -222,7 +257,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public async requestReview(): Promise<{ feedbackSent: boolean }> {
-    console.log('Review requested');
+    this.log('Review requested');
 
     return Promise.resolve({ feedbackSent: Math.round(Math.random()) != 0 });
   }
@@ -256,13 +291,13 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public async consumeProduct(purchasedProductToken: string): Promise<void> {
-    console.log(`Product with token (${purchasedProductToken}) consumed`);
+    this.log(`Product with token (${purchasedProductToken}) consumed`);
 
     return Promise.resolve();
   }
 
   public async setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void> {
-    console.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
+    this.log(`Set leaderboard (${leaderboardName}) score (${score}) with extraData (${extraData})`);
 
     return Promise.resolve();
   }
