@@ -28,6 +28,3 @@ export type GameDistributionSDK = {
   ): Promise<void>;
   openConsole(): Promise<void>;
 };
-
-const gdsdk: GameDistributionSDK = {} as any;
-gdsdk.showAd(gdsdk.AdType.Display);

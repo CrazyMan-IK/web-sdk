@@ -1,6 +1,6 @@
 import { IntRange } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, { Player, InterstitialCallbacks, Purchase, Signature, Product, LeaderboardEntries, RewardedCallbacks, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
+import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
 export default class GameDistributionSDKWrapper extends SDKWrapper {
     private readonly _adErrorReceived;
     private readonly _adStartedReceived;
@@ -39,8 +39,8 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
     authorizePlayer(): Promise<void>;
     getPlayer(): Promise<Player>;
     sendAnalyticsEvent(eventName: string, data?: Record<string, any>): void;
-    showInterstitial(callbacks?: InterstitialCallbacks): void;
-    showRewarded(callbacks?: RewardedCallbacks): void;
+    showInterstitial(): void;
+    showRewarded(): void;
     canReview(): Promise<CanReviewResponse>;
     requestReview(): Promise<{
         feedbackSent: boolean;

@@ -205,25 +205,10 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
             });
         }
     }
-    showInterstitial(callbacks) {
-        this._gamePauseReceived.one(() => {
-            callbacks?.onOpen?.();
-        });
-        this._gameStartReceived.one(() => {
-            callbacks?.onClose?.(true);
-        });
+    showInterstitial() {
         this._sdk?.showAd(this._sdk?.AdType.Interstitial);
     }
-    showRewarded(callbacks) {
-        this._gamePauseReceived.one(() => {
-            callbacks?.onOpen?.();
-        });
-        this._rewardedRewardReceived.one(() => {
-            callbacks?.onRewarded?.();
-        });
-        this._gameStartReceived.one(() => {
-            callbacks?.onClose?.(true);
-        });
+    showRewarded() {
         this._sdk?.showAd(this._sdk?.AdType.Rewarded);
     }
     async canReview() {

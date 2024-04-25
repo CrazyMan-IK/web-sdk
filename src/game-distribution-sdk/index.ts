@@ -316,31 +316,11 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
     }
   }
 
-  public showInterstitial(callbacks?: InterstitialCallbacks): void {
-    this._gamePauseReceived.one(() => {
-      callbacks?.onOpen?.();
-    });
-
-    this._gameStartReceived.one(() => {
-      callbacks?.onClose?.(true);
-    });
-
+  public showInterstitial(): void {
     this._sdk?.showAd(this._sdk?.AdType.Interstitial);
   }
 
-  public showRewarded(callbacks?: RewardedCallbacks): void {
-    this._gamePauseReceived.one(() => {
-      callbacks?.onOpen?.();
-    });
-
-    this._rewardedRewardReceived.one(() => {
-      callbacks?.onRewarded?.();
-    });
-
-    this._gameStartReceived.one(() => {
-      callbacks?.onClose?.(true);
-    });
-
+  public showRewarded(): void {
     this._sdk?.showAd(this._sdk?.AdType.Rewarded);
   }
 
