@@ -42,6 +42,9 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
                     case 'COMPLETE':
                         this._adCompletedReceived.dispatch(true);
                         break;
+                    case 'SKIPPED':
+                        this._adCompletedReceived.dispatch(true);
+                        break;
                     case 'SDK_READY':
                         this._sdkReadyReceived.dispatch();
                         break;
