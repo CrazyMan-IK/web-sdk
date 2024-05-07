@@ -2,10 +2,10 @@ import { SignalDispatcher } from 'ste-signals';
 import LocalizedString from './localized-string';
 export var Locale;
 (function (Locale) {
-    Locale[Locale["English"] = 0] = "English";
-    Locale[Locale["Turkish"] = 1] = "Turkish";
-    Locale[Locale["Deutsch"] = 2] = "Deutsch";
-    Locale[Locale["Russian"] = 3] = "Russian";
+    Locale[Locale["English"] = 1] = "English";
+    Locale[Locale["Turkish"] = 2] = "Turkish";
+    Locale[Locale["Deutsch"] = 4] = "Deutsch";
+    Locale[Locale["Russian"] = 8] = "Russian";
 })(Locale || (Locale = {}));
 export default class Localization {
     //public static event Action LocaleChanged = null;
@@ -13,6 +13,7 @@ export default class Localization {
     //private static readonly _strings: { [key: string]: { [key in Locale]: string } } = {
     static _strings = {};
     static _localizedStrings = {};
+    static _allowedLocales = Locale.English | Locale.Turkish | Locale.Deutsch | Locale.Russian;
     static _locale = Locale.English;
     static get localeChanged() {
         return this._localeChanged.asEvent();
@@ -21,11 +22,20 @@ export default class Localization {
         return this._locale;
     }
     static set locale(value) {
-        if (this._locale == value) {
+        if (this._locale == value || !(value & this._allowedLocales)) {
             return;
         }
         this._locale = value;
         this._localeChanged.dispatch();
+    }
+    static setAllowedLocales(allowedLocales) {
+        if (allowedLocales < 1) {
+            return;
+        }
+        this._allowedLocales = allowedLocales;
+    }
+    static isLocaleAllowed(locale) {
+        return (this._allowedLocales & locale) == locale;
     }
     static addString(key, values) {
         this._strings[key] = values;

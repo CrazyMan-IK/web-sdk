@@ -2,10 +2,10 @@ import { SignalDispatcher } from 'ste-signals';
 import LocalizedString from './localized-string';
 
 export enum Locale {
-  English,
-  Turkish,
-  Deutsch,
-  Russian
+  English = 1,
+  Turkish = 2,
+  Deutsch = 4,
+  Russian = 8
 }
 
 export default class Localization {
@@ -15,6 +15,7 @@ export default class Localization {
   //private static readonly _strings: { [key: string]: { [key in Locale]: string } } = {
   private static readonly _strings: Record<string, Readonly<Record<Locale, string>> | undefined> = {};
   private static readonly _localizedStrings: Record<string, LocalizedString> = {};
+  private static _allowedLocales: Locale = Locale.English | Locale.Turkish | Locale.Deutsch | Locale.Russian;
   private static _locale: Locale = Locale.English;
 
   public static get localeChanged() {
@@ -26,12 +27,24 @@ export default class Localization {
   }
 
   public static set locale(value) {
-    if (this._locale == value) {
+    if (this._locale == value || !(value & this._allowedLocales)) {
       return;
     }
 
     this._locale = value;
     this._localeChanged.dispatch();
+  }
+
+  public static setAllowedLocales(allowedLocales: Locale) {
+    if (allowedLocales < 1) {
+      return;
+    }
+
+    this._allowedLocales = allowedLocales;
+  }
+
+  public static isLocaleAllowed(locale: Locale): boolean {
+    return (this._allowedLocales & locale) == locale;
   }
 
   public static addString(key: string, values: Readonly<Record<Locale, string>>) {
