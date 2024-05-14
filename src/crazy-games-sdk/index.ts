@@ -525,9 +525,9 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
           },
           get photo() {
             return {
-              small: 'https://i.pravatar.cc/256',
-              medium: 'https://i.pravatar.cc/256',
-              large: 'https://i.pravatar.cc/256'
+              small: 'https://i.pravatar.cc/256?i=' + i,
+              medium: 'https://i.pravatar.cc/256?i=' + i,
+              large: 'https://i.pravatar.cc/256?i=' + i
             };
           },
           get uuid() {
