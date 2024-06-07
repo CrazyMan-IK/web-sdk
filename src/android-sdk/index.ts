@@ -1,20 +1,9 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { IntRange, keyof } from '../global';
 import { Locale } from '../localization';
-import SDKWrapper, {
-  Player,
-  InterstitialCallbacks,
-  Purchase,
-  Signature,
-  Product,
-  LeaderboardEntries,
-  LeaderboardEntry,
-  RewardedCallbacks,
-  CanReviewResponse,
-  FlagsParams
-} from '../sdk-wrapper';
+import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, LeaderboardEntry, CanReviewResponse, FlagsParams } from '../sdk-wrapper';
 
-export default class DefaultSDKWrapper extends SDKWrapper {
+export default class AndroidSDKWrapper extends SDKWrapper {
   public static readonly UniquePlayerID: string = 'UniquePlayerID';
 
   //private readonly _adErrorReceived: SimpleEventDispatcher<Error> = new SimpleEventDispatcher();
@@ -26,18 +15,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
 
   private readonly _overridedProductsCatalog: Product[] = [];
   private readonly _lang: string;
-  private readonly _tld: string;
-  private readonly _isDraft: boolean;
   private _isAuthorized: boolean = false;
 
   public constructor() {
-    super(keyof({ DefaultSDKWrapper }));
+    super(keyof({ AndroidSDKWrapper }));
 
-    const urlParams = new URL(location.href).searchParams;
-
-    this._lang = urlParams.get('lang') ?? 'ru';
-    this._tld = urlParams.get('tld') ?? 'ru';
-    this._isDraft = urlParams.get('draft') === 'true';
+    this._lang = navigator.language;
   }
 
   public get contentPauseRequested() {
@@ -86,11 +69,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public get lang(): string {
-    return this._lang;
+    return this._lang.substring(0, 2);
   }
 
   public get tld(): string {
-    return this._tld;
+    return this._lang;
   }
 
   public get id(): string {
@@ -180,7 +163,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
   }
 
   public async isMe(uniqueID: string): Promise<boolean> {
-    return uniqueID == DefaultSDKWrapper.UniquePlayerID;
+    return uniqueID == AndroidSDKWrapper.UniquePlayerID;
   }
 
   public async authorizePlayer(): Promise<void> {
@@ -212,7 +195,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         };
       },
       get uuid() {
-        return DefaultSDKWrapper.UniquePlayerID;
+        return AndroidSDKWrapper.UniquePlayerID;
       }
     };
 
@@ -359,7 +342,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
             };
           },
           get uuid() {
-            return i == me ? DefaultSDKWrapper.UniquePlayerID : '';
+            return i == me ? AndroidSDKWrapper.UniquePlayerID : '';
           }
         },
 
@@ -374,5 +357,13 @@ export default class DefaultSDKWrapper extends SDKWrapper {
 
   public async getFlags(params: FlagsParams): Promise<Record<string, string>> {
     return params.defaultFlags ?? {};
+  }
+
+  public async getPlayerData(keys: string[] | undefined = undefined): Promise<Record<string, any>> {
+    return Promise.resolve({});
+  }
+
+  public async setPlayerData(values: Record<string, any>): Promise<void> {
+    return Promise.resolve();
   }
 }

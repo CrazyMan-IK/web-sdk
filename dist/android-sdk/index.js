@@ -2,7 +2,7 @@ import { SimpleEventDispatcher } from 'ste-simple-events';
 import { keyof } from '../global';
 import { Locale } from '../localization';
 import SDKWrapper from '../sdk-wrapper';
-export default class DefaultSDKWrapper extends SDKWrapper {
+export default class AndroidSDKWrapper extends SDKWrapper {
     static UniquePlayerID = 'UniquePlayerID';
     //private readonly _adErrorReceived: SimpleEventDispatcher<Error> = new SimpleEventDispatcher();
     _adStartedReceived = new SimpleEventDispatcher();
@@ -12,15 +12,10 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     _rewardedRewardReceived = new SimpleEventDispatcher();
     _overridedProductsCatalog = [];
     _lang;
-    _tld;
-    _isDraft;
     _isAuthorized = false;
     constructor() {
-        super(keyof({ DefaultSDKWrapper }));
-        const urlParams = new URL(location.href).searchParams;
-        this._lang = urlParams.get('lang') ?? 'ru';
-        this._tld = urlParams.get('tld') ?? 'ru';
-        this._isDraft = urlParams.get('draft') === 'true';
+        super(keyof({ AndroidSDKWrapper }));
+        this._lang = navigator.language;
     }
     get contentPauseRequested() {
         return this._gamePauseReceived.asEvent();
@@ -63,10 +58,10 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         return result;
     }
     get lang() {
-        return this._lang;
+        return this._lang.substring(0, 2);
     }
     get tld() {
-        return this._tld;
+        return this._lang;
     }
     get id() {
         return '0';
@@ -144,7 +139,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         this.log('Happy Time');
     }
     async isMe(uniqueID) {
-        return uniqueID == DefaultSDKWrapper.UniquePlayerID;
+        return uniqueID == AndroidSDKWrapper.UniquePlayerID;
     }
     async authorizePlayer() {
         this._isAuthorized = true;
@@ -173,7 +168,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
                 };
             },
             get uuid() {
-                return DefaultSDKWrapper.UniquePlayerID;
+                return AndroidSDKWrapper.UniquePlayerID;
             }
         };
         return Promise.resolve(player);
@@ -288,7 +283,7 @@ export default class DefaultSDKWrapper extends SDKWrapper {
                         };
                     },
                     get uuid() {
-                        return i == me ? DefaultSDKWrapper.UniquePlayerID : '';
+                        return i == me ? AndroidSDKWrapper.UniquePlayerID : '';
                     }
                 },
                 formattedScore: ''
@@ -299,6 +294,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
     }
     async getFlags(params) {
         return params.defaultFlags ?? {};
+    }
+    async getPlayerData(keys = undefined) {
+        return Promise.resolve({});
+    }
+    async setPlayerData(values) {
+        return Promise.resolve();
     }
 }
 //# sourceMappingURL=index.js.map

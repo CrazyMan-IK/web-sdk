@@ -1,19 +1,7 @@
 import { SimpleEventDispatcher } from 'ste-simple-events';
 import { IntRange } from './global';
 import Localization from './localization';
-import SDKWrapper, {
-  Player,
-  Purchase,
-  Signature,
-  Product,
-  LeaderboardEntries,
-  DeviceInfo,
-  InterstitialCallbacks,
-  RewardedCallbacks,
-  CanReviewResponse,
-  FlagsParams
-} from './sdk-wrapper';
-import { YandexGamesSDK } from './yandex-sdk/yandex-sdk-definitions';
+import SDKWrapper, { Player, Purchase, Signature, Product, LeaderboardEntries, DeviceInfo, CanReviewResponse, FlagsParams } from './sdk-wrapper';
 
 const STATIC_INIT = Symbol();
 
@@ -703,6 +691,7 @@ const isInitialized = (() => {
 
     return true;
   }
+
   match = location.hostname.match(/game-files\.crazygames\.com/);
   if (match || location.href.search('platform=CrazyGames') >= 0) {
     (async () => {
@@ -713,6 +702,7 @@ const isInitialized = (() => {
 
     return true;
   }
+
   match = location.href.match(/appid=(\d+)/);
   if (match && location.href.search('platform=VKPlay') >= 0) {
     (async () => {
@@ -723,12 +713,23 @@ const isInitialized = (() => {
 
     return true;
   }
+
   match = location.href.match(/gamedistribution\.com\/(?:.+\/)?(.{32})/);
   if (match || location.href.search('platform=GameDistribution') >= 0) {
     (async () => {
       const GameDistributionSDKWrapper = (await import('./game-distribution-sdk')).default;
 
       return SDK[STATIC_INIT](new GameDistributionSDKWrapper(match?.[1] ?? ''));
+    })();
+
+    return true;
+  }
+
+  if ('_cordovaNative' in window) {
+    (async () => {
+      const AndroidSDKWrapper = (await import('./android-sdk')).default;
+
+      return SDK[STATIC_INIT](new AndroidSDKWrapper());
     })();
 
     return true;

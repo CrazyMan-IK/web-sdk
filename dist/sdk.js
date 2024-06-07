@@ -561,6 +561,13 @@ const isInitialized = (() => {
         })();
         return true;
     }
+    if ('_cordovaNative' in window) {
+        (async () => {
+            const AndroidSDKWrapper = (await import('./android-sdk')).default;
+            return SDK[STATIC_INIT](new AndroidSDKWrapper());
+        })();
+        return true;
+    }
     return false;
 })();
 if (!isInitialized) {
