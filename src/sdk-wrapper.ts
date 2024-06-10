@@ -47,6 +47,7 @@ export type Product = {
   readonly id: string;
   readonly meta: Record<'en' | 'ru', ProductMeta> & Partial<Record<'tr' | 'de', ProductMeta>>;
   readonly imageURI: string;
+  readonly svgImageURI: string;
   readonly prices: Partial<Record<'YAN' | 'RUB' | 'USD' | 'EUR', number>>;
 };
 
