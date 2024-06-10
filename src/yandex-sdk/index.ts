@@ -407,8 +407,9 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
 
       const result = catalog.map<Product>((x) => ({
         id: x.id,
-        imageURI: x.getPriceCurrencyImage('medium'),
-        svgImageURI: x.getPriceCurrencyImage('svg'),
+        imageURI: x.imageURI,
+        currencyImageURI: x.getPriceCurrencyImage('medium'),
+        svgCurrencyImageURI: x.getPriceCurrencyImage('svg'),
         meta: {
           en: {
             name: x.title,
