@@ -137,7 +137,7 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
         this._appID = this._sdk.game.id;
         this._lang = this._sdk.user.systemInfo.countryCode ?? 'EN';
 
-        this._sdk.game.sdkGameLoadingStart();
+        this._sdk.game.loadingStart();
 
         resolve();
       });
@@ -145,7 +145,7 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
   }
 
   public ready(): void {
-    this._sdk?.game.sdkGameLoadingStop();
+    this._sdk?.game.loadingStop();
   }
 
   public gameplayStart(): void {

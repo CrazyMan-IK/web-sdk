@@ -47,8 +47,8 @@ export type CrazyGamesSDK = {
 
   readonly game: {
     get id(): string;
-    sdkGameLoadingStart(): Promise<void>;
-    sdkGameLoadingStop(): Promise<void>;
+    loadingStart(): Promise<void>;
+    loadingStop(): Promise<void>;
     gameplayStart(): Promise<void>;
     gameplayStop(): Promise<void>;
     happytime(): Promise<void>;
