@@ -697,6 +697,9 @@ const isInitialized = (() => {
   }
 
   match = location.hostname.match(/game-files\.crazygames\.com/);
+  if (!match) {
+    match = location.hostname.match(/prod-dpgames\.crazygames\.com/);
+  }
   if (match || location.href.search('platform=CrazyGames') >= 0) {
     (async () => {
       const CrazyGamesSDKWrapper = (await import('./crazy-games-sdk')).default;
