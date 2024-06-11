@@ -79,10 +79,10 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     }
     async initialize() {
         const script = document.createElement('script');
-        script.src = 'https://sdk.crazygames.com/crazygames-sdk-v2.js';
+        script.src = 'https://sdk.crazygames.com/crazygames-sdk-v3.js';
         document.head.appendChild(script);
         return new Promise((resolve) => {
-            script.addEventListener('load', () => {
+            script.addEventListener('load', async () => {
                 this._sdk = window.CrazyGames.SDK;
                 this._sdk.addInitCallback((initObject) => {
                     this._initObject = initObject;
@@ -91,7 +91,7 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
                     this._sdk?.game.sdkGameLoadingStart();
                     resolve();
                 });
-                //await this._sdk.init();
+                await this._sdk.init();
             });
         });
     }
