@@ -52,5 +52,7 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     setLeaderboardScore(leaderboardName: string, score: number, extraData?: string): Promise<void>;
     getLeaderboardEntries(leaderboardName: string, topPlayersCount?: IntRange<1, 21>, competingPlayersCount?: IntRange<1, 11>, includeSelf?: boolean): Promise<LeaderboardEntries>;
     getFlags(params: FlagsParams): Promise<Record<string, string>>;
+    getPlayerData(keys?: string[] | undefined): Promise<Record<string, any>>;
+    setPlayerData(values: Record<string, any>): Promise<void>;
     private parseJwt;
 }

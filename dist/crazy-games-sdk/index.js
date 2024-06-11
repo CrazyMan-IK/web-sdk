@@ -460,33 +460,25 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     async getFlags(params) {
         return params.defaultFlags ?? {};
     }
-    /* public async getPlayerData(keys: string[] | undefined = undefined): Promise<Record<string, any>> {
-      const data = this._sdk?.data?.getItem('DATA');
-  
-      if (!data) {
-        return super.getPlayerData(keys);
-      }
-  
-      const dataJson = JSON.parse(data);
-  
-      if (keys === undefined) {
-        return dataJson;
-      }
-  
-      const result: Record<string, any> = {};
-  
-      for (const key of keys) {
-        result[key] = dataJson[key];
-      }
-  
-      return result;
+    async getPlayerData(keys = undefined) {
+        const data = this._sdk?.data?.getItem('DATA');
+        if (!data) {
+            return super.getPlayerData(keys);
+        }
+        const dataJson = JSON.parse(data);
+        if (keys === undefined) {
+            return dataJson;
+        }
+        const result = {};
+        for (const key of keys) {
+            result[key] = dataJson[key];
+        }
+        return result;
     }
-  
-    public async setPlayerData(values: Record<string, any>): Promise<void> {
-      this._sdk?.data.setItem('DATA', JSON.stringify(values));
-  
-      super.setPlayerData(values);
-    } */
+    async setPlayerData(values) {
+        this._sdk?.data.setItem('DATA', JSON.stringify(values));
+        super.setPlayerData(values);
+    }
     parseJwt(token) {
         if (!token) {
             return {};

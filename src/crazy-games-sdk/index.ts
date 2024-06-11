@@ -548,7 +548,7 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     return params.defaultFlags ?? {};
   }
 
-  /* public async getPlayerData(keys: string[] | undefined = undefined): Promise<Record<string, any>> {
+  public async getPlayerData(keys: string[] | undefined = undefined): Promise<Record<string, any>> {
     const data = this._sdk?.data?.getItem('DATA');
 
     if (!data) {
@@ -574,7 +574,7 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     this._sdk?.data.setItem('DATA', JSON.stringify(values));
 
     super.setPlayerData(values);
-  } */
+  }
 
   private parseJwt(token?: string): Record<string, any> {
     if (!token) {
