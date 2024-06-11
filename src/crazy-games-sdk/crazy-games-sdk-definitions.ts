@@ -46,6 +46,7 @@ export type CrazyGamesSDK = {
   };
 
   readonly game: {
+    get id(): string;
     sdkGameLoadingStart(): Promise<void>;
     sdkGameLoadingStop(): Promise<void>;
     gameplayStart(): Promise<void>;
@@ -59,6 +60,7 @@ export type CrazyGamesSDK = {
   };
 
   readonly user: {
+    get systemInfo(): SystemInformation;
     isUserAccountAvailable(): Promise<boolean>;
     getSystemInfo(): Promise<SystemInformation>;
     getUser(): Promise<User>;
@@ -80,5 +82,5 @@ export type CrazyGamesSDK = {
   };
 
   init(): Promise<void>;
-  addInitCallback(callback: (initObject: InitializeObject) => void): void;
+  //addInitCallback(callback: (initObject: InitializeObject) => void): void;
 };

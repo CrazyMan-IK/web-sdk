@@ -44,6 +44,7 @@ export type CrazyGamesSDK = {
         hasAdblock(): Promise<boolean>;
     };
     readonly game: {
+        get id(): string;
         sdkGameLoadingStart(): Promise<void>;
         sdkGameLoadingStop(): Promise<void>;
         gameplayStart(): Promise<void>;
@@ -54,6 +55,7 @@ export type CrazyGamesSDK = {
         hideInviteButton(): Promise<void>;
     };
     readonly user: {
+        get systemInfo(): SystemInformation;
         isUserAccountAvailable(): Promise<boolean>;
         getSystemInfo(): Promise<SystemInformation>;
         getUser(): Promise<User>;
@@ -74,5 +76,4 @@ export type CrazyGamesSDK = {
         removeItem(key: string): void;
     };
     init(): Promise<void>;
-    addInitCallback(callback: (initObject: InitializeObject) => void): void;
 };

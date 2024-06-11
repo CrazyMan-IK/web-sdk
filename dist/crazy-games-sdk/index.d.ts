@@ -12,7 +12,6 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     private readonly _isDraft;
     private _player;
     private _sdk;
-    private _initObject;
     private _isAuthorized;
     private _appID;
     private _lang;

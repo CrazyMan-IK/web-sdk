@@ -35,7 +35,7 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
 
   private _player: Player | null = null;
   private _sdk: CrazyGamesSDK | null = null;
-  private _initObject: InitializeObject | null = null;
+  //private _initObject: InitializeObject | null = null;
   //private _playerInfo: UserInfo | null = null;
   private _isAuthorized: boolean = false;
   private _appID: string = '0';
@@ -121,18 +121,25 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
       script.addEventListener('load', async () => {
         this._sdk = window.CrazyGames.SDK;
 
-        this._sdk.addInitCallback((initObject) => {
+        /* this._sdk.addInitCallback((initObject) => {
           this._initObject = initObject;
 
           this._appID = initObject.gameId ?? '0';
           this._lang = initObject.systemInfo.countryCode ?? 'EN';
 
-          this._sdk?.game.sdkGameLoadingStart();
+          this._sdk.game.sdkGameLoadingStart();
 
           resolve();
-        });
+        }); */
 
         await this._sdk.init();
+
+        this._appID = this._sdk.game.id;
+        this._lang = this._sdk.user.systemInfo.countryCode ?? 'EN';
+
+        this._sdk.game.sdkGameLoadingStart();
+
+        resolve();
       });
     });
   }
