@@ -137,6 +137,8 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
         this._appID = this._sdk.game.id;
         this._lang = this._sdk.user.systemInfo.countryCode ?? 'EN';
 
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
         this._sdk.game.loadingStart();
 
         resolve();
