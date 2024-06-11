@@ -90,8 +90,9 @@ export type CanReviewResponse = {
     reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN';
 };
 export default abstract class SDKWrapper {
-    private readonly _logName;
-    protected constructor(logName: string);
+    private readonly _sdkName;
+    protected constructor(sdkName: string);
+    get name(): string;
     abstract get contentPauseRequested(): ISimpleEvent<void>;
     abstract get contentContinueRequested(): ISimpleEvent<void>;
     abstract get adOpened(): ISimpleEvent<void>;

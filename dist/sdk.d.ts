@@ -21,6 +21,7 @@ export default abstract class SDK {
     static get contentPauseRequested(): import("ste-simple-events").ISimpleEvent<void>;
     static get contentContinueRequested(): import("ste-simple-events").ISimpleEvent<void>;
     static get rewardedAdReward(): import("ste-simple-events").ISimpleEvent<string>;
+    static get currentSdkName(): string;
     static get isAuthorized(): boolean;
     static get tld(): string;
     static get lang(): string;

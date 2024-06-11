@@ -160,6 +160,10 @@ export default abstract class SDK {
     return this._rewardedAdReward.asEvent();
   }
 
+  public static get currentSdkName(): string {
+    return this._sdk.name;
+  }
+
   public static get isAuthorized(): boolean {
     return this._sdk.isAuthorized;
   }

@@ -118,10 +118,14 @@ export type CanReviewResponse =
   | { value: false; reason: 'NO_AUTH' | 'GAME_RATED' | 'REVIEW_ALREADY_REQUESTED ' | 'REVIEW_WAS_REQUESTED' | 'UNKNOWN' };
 
 export default abstract class SDKWrapper {
-  private readonly _logName: string = '';
+  private readonly _sdkName: string = '';
 
-  protected constructor(logName: string) {
-    this._logName = logName;
+  protected constructor(sdkName: string) {
+    this._sdkName = sdkName;
+  }
+
+  public get name(): string {
+    return this._sdkName;
   }
 
   public abstract get contentPauseRequested(): ISimpleEvent<void>;
@@ -206,6 +210,6 @@ export default abstract class SDKWrapper {
     const style =
       'background: wheat; color: #1E324B; font-family: tahoma, verdana, helvetica, arial; font-size: 14px; font-weight: 900; text-align: center; padding: 6px 2px; border-radius: 6px; border: 2px solid #434975';
 
-    console.log(`%c[${this._logName}]:`, style, ...message);
+    console.log(`%c[${this._sdkName}]:`, style, ...message);
   }
 }

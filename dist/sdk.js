@@ -121,6 +121,9 @@ export default class SDK {
     static get rewardedAdReward() {
         return this._rewardedAdReward.asEvent();
     }
+    static get currentSdkName() {
+        return this._sdk.name;
+    }
     static get isAuthorized() {
         return this._sdk.isAuthorized;
     }

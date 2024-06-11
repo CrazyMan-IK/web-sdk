@@ -15,9 +15,12 @@ function setLocalStorageItem(key, value) {
     }
 }
 export default class SDKWrapper {
-    _logName = '';
-    constructor(logName) {
-        this._logName = logName;
+    _sdkName = '';
+    constructor(sdkName) {
+        this._sdkName = sdkName;
+    }
+    get name() {
+        return this._sdkName;
     }
     get deviceInfo() {
         return {
@@ -44,7 +47,7 @@ export default class SDKWrapper {
     }
     log(...message) {
         const style = 'background: wheat; color: #1E324B; font-family: tahoma, verdana, helvetica, arial; font-size: 14px; font-weight: 900; text-align: center; padding: 6px 2px; border-radius: 6px; border: 2px solid #434975';
-        console.log(`%c[${this._logName}]:`, style, ...message);
+        console.log(`%c[${this._sdkName}]:`, style, ...message);
     }
 }
 //# sourceMappingURL=sdk-wrapper.js.map
