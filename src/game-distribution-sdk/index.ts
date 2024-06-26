@@ -125,9 +125,11 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
             break;
           case 'COMPLETE':
             this._adCompletedReceived.dispatch(true);
+            this._gameStartReceived.dispatch();
             break;
           case 'SKIPPED':
             this._adCompletedReceived.dispatch(true);
+            this._gameStartReceived.dispatch();
             break;
           case 'SDK_READY':
             this._sdkReadyReceived.dispatch();
@@ -320,10 +322,12 @@ export default class GameDistributionSDKWrapper extends SDKWrapper {
   }
 
   public showInterstitial(): void {
+    this._gamePauseReceived.dispatch();
     this._sdk?.showAd(this._sdk?.AdType.Interstitial);
   }
 
   public showRewarded(): void {
+    this._gamePauseReceived.dispatch();
     this._sdk?.showAd(this._sdk?.AdType.Rewarded);
   }
 

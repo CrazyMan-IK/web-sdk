@@ -234,10 +234,10 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     }
     showInterstitial( /* callbacks?: InterstitialCallbacks */) {
         //this._sdk.adv.showFullscreenAdv({ callback });
+        this._gamePauseReceived.dispatch();
         this._sdk.adv.showFullscreenAdv({
             callbacks: {
                 onOpen: () => {
-                    this._gamePauseReceived.dispatch();
                     this._adStartedReceived.dispatch();
                 },
                 onClose: (wasShown) => {
@@ -252,10 +252,10 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     }
     showRewarded( /* callbacks?: RewardedCallbacks */) {
         //this._sdk.adv.showRewardedVideo({ callbacks });
+        this._gamePauseReceived.dispatch();
         this._sdk.adv.showRewardedVideo({
             callbacks: {
                 onOpen: () => {
-                    this._gamePauseReceived.dispatch();
                     this._adStartedReceived.dispatch();
                 },
                 onRewarded: () => {

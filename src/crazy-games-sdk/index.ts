@@ -360,10 +360,10 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
 
   public showInterstitial(/* callbacks?: InterstitialCallbacks */): void {
     let isAdShowed = true;
+    this._gamePauseReceived.dispatch();
     this._sdk?.ad.requestAd('midgame', {
       adStarted: () => {
         //callbacks?.onOpen?.();
-        this._gamePauseReceived.dispatch();
         this._adStartedReceived.dispatch();
       },
       adError: (error, errorData) => {
@@ -381,10 +381,10 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
 
   public showRewarded(/* callbacks?: RewardedCallbacks */): void {
     let isAdShowed = true;
+    this._gamePauseReceived.dispatch();
     this._sdk?.ad.requestAd('rewarded', {
       adStarted: () => {
         //callbacks?.onOpen?.();
-        this._gamePauseReceived.dispatch();
         this._adStartedReceived.dispatch();
       },
       adError: (error, errorData) => {
