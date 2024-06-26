@@ -358,45 +358,38 @@ export default class CrazyGamesSDKWrapper extends SDKWrapper {
     this.log(`Analytic event sended (${eventName}) with data: ${JSON.stringify(data)}`);
   }
 
-  public showInterstitial(/* callbacks?: InterstitialCallbacks */): void {
-    let isAdShowed = true;
+  public showInterstitial(): void {
     this._gamePauseReceived.dispatch();
     this._sdk?.ad.requestAd('midgame', {
       adStarted: () => {
-        //callbacks?.onOpen?.();
         this._adStartedReceived.dispatch();
       },
       adError: (error, errorData) => {
-        isAdShowed = false;
-        //callbacks?.onError?.(new Error(error));
         this._adErrorReceived.dispatch(new Error(error));
+        this._adCompletedReceived.dispatch(false);
+        this._gameStartReceived.dispatch();
       },
       adFinished: () => {
-        //callbacks?.onClose?.(isAdShowed);
-        this._adCompletedReceived.dispatch(isAdShowed);
+        this._adCompletedReceived.dispatch(true);
         this._gameStartReceived.dispatch();
       }
     });
   }
 
-  public showRewarded(/* callbacks?: RewardedCallbacks */): void {
-    let isAdShowed = true;
+  public showRewarded(): void {
     this._gamePauseReceived.dispatch();
     this._sdk?.ad.requestAd('rewarded', {
       adStarted: () => {
-        //callbacks?.onOpen?.();
         this._adStartedReceived.dispatch();
       },
       adError: (error, errorData) => {
-        isAdShowed = false;
-        //callbacks?.onError?.(new Error(error));
         this._adErrorReceived.dispatch(new Error(error));
+        this._adCompletedReceived.dispatch(false);
+        this._gameStartReceived.dispatch();
       },
       adFinished: () => {
-        //callbacks?.onRewarded?.();
-        //callbacks?.onClose?.(isAdShowed);
         this._rewardedRewardReceived.dispatch();
-        this._adCompletedReceived.dispatch(isAdShowed);
+        this._adCompletedReceived.dispatch(true);
         this._gameStartReceived.dispatch();
       }
     });

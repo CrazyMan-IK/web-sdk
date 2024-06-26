@@ -186,9 +186,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         callbacks?.onClose?.(true); */
         this._gamePauseReceived.dispatch();
         this._adStartedReceived.dispatch();
+        this.log('Interstitial Started');
+        this.log('Interstitial Showed');
         this._adCompletedReceived.dispatch(true);
         this._gameStartReceived.dispatch();
-        this.log('Interstitial Showed');
+        this.log('Interstitial Completed');
     }
     showRewarded( /* callbacks?: RewardedCallbacks */) {
         /* callbacks?.onOpen?.();
@@ -196,10 +198,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
         callbacks?.onClose?.(true); */
         this._gamePauseReceived.dispatch();
         this._adStartedReceived.dispatch();
+        this.log('Rewarded Started');
         this._rewardedRewardReceived.dispatch();
+        this.log('Rewarded Showed');
         this._adCompletedReceived.dispatch(true);
         this._gameStartReceived.dispatch();
-        this.log('Rewarded Showed');
+        this.log('Rewarded Completed');
     }
     async canReview() {
         const value = Math.round(Math.random()) != 0;

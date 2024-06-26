@@ -229,10 +229,11 @@ export default class DefaultSDKWrapper extends SDKWrapper {
 
     this._gamePauseReceived.dispatch();
     this._adStartedReceived.dispatch();
+    this.log('Interstitial Started');
+    this.log('Interstitial Showed');
     this._adCompletedReceived.dispatch(true);
     this._gameStartReceived.dispatch();
-
-    this.log('Interstitial Showed');
+    this.log('Interstitial Completed');
   }
 
   public showRewarded(/* callbacks?: RewardedCallbacks */): void {
@@ -242,11 +243,12 @@ export default class DefaultSDKWrapper extends SDKWrapper {
 
     this._gamePauseReceived.dispatch();
     this._adStartedReceived.dispatch();
+    this.log('Rewarded Started');
     this._rewardedRewardReceived.dispatch();
+    this.log('Rewarded Showed');
     this._adCompletedReceived.dispatch(true);
     this._gameStartReceived.dispatch();
-
-    this.log('Rewarded Showed');
+    this.log('Rewarded Completed');
   }
 
   public async canReview(): Promise<CanReviewResponse> {
