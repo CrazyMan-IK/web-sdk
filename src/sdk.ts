@@ -30,7 +30,7 @@ export default abstract class SDK {
   private static _gettings: Map<[string[], Record<number, any>] | null, (value: any[]) => void> = new Map();
 
   private static readonly _settingDataCooldown: number = 2;
-  private static _gameplayStartCount: number = 0;
+  private static _gameplayStopsCount: number = 0;
   /*private _startDelay: number = 0.25;
   private _isPlayerAuthorized: boolean = true;
   private _showFakeAdvertisement: boolean = true;
@@ -230,13 +230,13 @@ export default abstract class SDK {
   }
 
   public static gameplayStart(): void {
-    if (this._gameplayStartCount++ === 0) {
+    if (this._gameplayStopsCount > 0 && --this._gameplayStopsCount === 0) {
       this._sdk.gameplayStart();
     }
   }
 
   public static gameplayStop(): void {
-    if (this._gameplayStartCount > 0 && --this._gameplayStartCount === 0) {
+    if (this._gameplayStopsCount++ === 0) {
       this._sdk.gameplayStop();
     }
   }
