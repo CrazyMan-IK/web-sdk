@@ -17,6 +17,7 @@ export default abstract class SDK {
     private static _isAdOpened;
     private static _gettings;
     private static readonly _settingDataCooldown;
+    private static _gameplayStartCount;
     static [STATIC_INIT](sdk: SDKWrapper): Promise<void>;
     static get contentPauseRequested(): import("ste-simple-events").ISimpleEvent<void>;
     static get contentContinueRequested(): import("ste-simple-events").ISimpleEvent<void>;

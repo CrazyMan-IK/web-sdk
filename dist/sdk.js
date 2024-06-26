@@ -17,6 +17,7 @@ export default class SDK {
     static _isAdOpened = false;
     static _gettings = new Map();
     static _settingDataCooldown = 2;
+    static _gameplayStartCount = 0;
     /*private _startDelay: number = 0.25;
     private _isPlayerAuthorized: boolean = true;
     private _showFakeAdvertisement: boolean = true;
@@ -176,10 +177,14 @@ export default class SDK {
         return this._sdk.isMe(uniqueID);
     }
     static gameplayStart() {
-        this._sdk.gameplayStart();
+        if (this._gameplayStartCount++ === 0) {
+            this._sdk.gameplayStart();
+        }
     }
     static gameplayStop() {
-        this._sdk.gameplayStop();
+        if (this._gameplayStartCount > 0 && --this._gameplayStartCount === 0) {
+            this._sdk.gameplayStop();
+        }
     }
     static happyTime() {
         this._sdk.happyTime();
