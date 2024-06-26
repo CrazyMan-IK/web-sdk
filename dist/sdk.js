@@ -17,7 +17,7 @@ export default class SDK {
     static _isAdOpened = false;
     static _gettings = new Map();
     static _settingDataCooldown = 2;
-    static _gameplayStopsCount = 0;
+    static _gameplayStopsCount = 1;
     /*private _startDelay: number = 0.25;
     private _isPlayerAuthorized: boolean = true;
     private _showFakeAdvertisement: boolean = true;

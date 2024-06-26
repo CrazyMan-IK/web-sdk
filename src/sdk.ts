@@ -30,7 +30,7 @@ export default abstract class SDK {
   private static _gettings: Map<[string[], Record<number, any>] | null, (value: any[]) => void> = new Map();
 
   private static readonly _settingDataCooldown: number = 2;
-  private static _gameplayStopsCount: number = 0;
+  private static _gameplayStopsCount: number = 1;
   /*private _startDelay: number = 0.25;
   private _isPlayerAuthorized: boolean = true;
   private _showFakeAdvertisement: boolean = true;
