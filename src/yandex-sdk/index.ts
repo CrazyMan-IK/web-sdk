@@ -206,10 +206,14 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
 
   public gameplayStart(): void {
     this.log('Gameplay Start');
+
+    this._sdk.features.GameplayAPI?.start();
   }
 
   public gameplayStop(): void {
     this.log('Gameplay Stop');
+
+    this._sdk.features.GameplayAPI?.stop();
   }
 
   public happyTime(): void {

@@ -109,6 +109,10 @@ export type YandexGamesSDK = {
         readonly LoadingAPI?: {
             ready(): void;
         };
+        readonly GameplayAPI?: {
+            start(): void;
+            stop(): void;
+        };
     };
     readonly deviceInfo: {
         readonly type: string;

@@ -153,9 +153,11 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     }
     gameplayStart() {
         this.log('Gameplay Start');
+        this._sdk.features.GameplayAPI?.start();
     }
     gameplayStop() {
         this.log('Gameplay Stop');
+        this._sdk.features.GameplayAPI?.stop();
     }
     happyTime() {
         this.log('Happy Time');
