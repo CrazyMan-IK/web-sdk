@@ -10,6 +10,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     _gameStartReceived = new SimpleEventDispatcher();
     _rewardedRewardReceived = new SimpleEventDispatcher();
     //private readonly _overridedProductsCatalog: Product[] = [];
+    _isYandex;
     _isDraft;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     _sdk = null;
@@ -21,6 +22,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     constructor( /* sdk: YandexGamesSDK */) {
         super(keyof({ YandexGamesSDKWrapper }));
         //this._sdk = sdk;
+        this._isYandex = !!(location.hostname.match(/app-\d{6}\.games\.s3\.yandex\.net/) || decodeURIComponent(location.hash).match(/origin=https:\/\/yandex\.(.+)&draft=true/));
         this._isDraft = location.hash.search('draft=true') >= 0;
     }
     get contentPauseRequested() {
@@ -117,7 +119,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
             window.addEventListener('DOMContentLoaded', domContentLoaded);
         }
         const script = document.createElement('script');
-        script.src = 'https://yandex.ru/games/sdk/v2';
+        script.src = this._isYandex ? '/sdk.js' : 'https://sdk.games.s3.yandex.net/sdk.js';
         document.head.appendChild(script);
         await new Promise((resolve) => {
             script.addEventListener('load', () => {

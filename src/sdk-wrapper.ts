@@ -210,6 +210,6 @@ export default abstract class SDKWrapper {
     const style =
       'background: wheat; color: #1E324B; font-family: tahoma, verdana, helvetica, arial; font-size: 14px; font-weight: 900; text-align: center; padding: 6px 2px; border-radius: 6px; border: 2px solid #434975';
 
-    console.log(`%c[${this._sdkName}]:`, style, ...message);
+    console.trace(`%c[${this._sdkName}]:`, style, ...message);
   }
 }

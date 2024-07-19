@@ -9,6 +9,7 @@ export default class YandexGamesSDKWrapper extends SDKWrapper {
     private readonly _gamePauseReceived;
     private readonly _gameStartReceived;
     private readonly _rewardedRewardReceived;
+    private readonly _isYandex;
     private readonly _isDraft;
     private _sdk;
     private _player;
